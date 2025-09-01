@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import Certificate from "@/components/certificate"
 
 interface QuizOption {
   id: number
@@ -35,7 +36,7 @@ interface CertificateData {
 }
 
 export default function HomePage() {
-  const [currentStep, setCurrentStep] = useState("form") // hero, quiz, form, loading, result
+  const [currentStep, setCurrentStep] = useState("hero") // hero, quiz, form, loading, result
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [formData, setFormData] = useState({
     name: "",
@@ -50,6 +51,9 @@ export default function HomePage() {
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>("")
+
+  const certificateRef = useRef<HTMLDivElement>(null)
+  const [showCertificateBack, setShowCertificateBack] = useState(false)
 
   const fetchQuizData = async () => {
     try {
@@ -243,6 +247,61 @@ export default function HomePage() {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1)
       setError("")
+    }
+  }
+
+  const downloadCertificateAsPDF = async () => {
+    if (!certificateRef.current || !certificateData) return
+
+    try {
+      const html2canvas = (await import("html2canvas")).default
+      const jsPDF = (await import("jspdf")).default
+
+      const canvas = await html2canvas(certificateRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+      })
+
+      const imgData = canvas.toDataURL("image/png")
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4",
+      })
+
+      const imgWidth = 297 // A4 landscape width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight)
+      pdf.save(`${certificateData.name}-宇宙证书.pdf`)
+    } catch (error) {
+      console.error("PDF generation failed:", error)
+      setError("PDF生成失败，请重试")
+    }
+  }
+
+  const downloadCertificateAsImage = async () => {
+    if (!certificateRef.current || !certificateData) return
+
+    try {
+      const html2canvas = (await import("html2canvas")).default
+
+      const canvas = await html2canvas(certificateRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+      })
+
+      const link = document.createElement("a")
+      link.download = `${certificateData.name}-宇宙证书.png`
+      link.href = canvas.toDataURL("image/png")
+      link.click()
+    } catch (error) {
+      console.error("Image generation failed:", error)
+      setError("图片生成失败，请重试")
     }
   }
 
@@ -490,7 +549,7 @@ export default function HomePage() {
                       <Input
                           value={formData.employeeId}
                           onChange={(e) => setFormData((prev) => ({ ...prev, employeeId: e.target.value }))}
-                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground placeholder-muted-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all duration-300"
+                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground placeholder-muted-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300 px-4"
                           placeholder="请输入您的工号"
                           required
                       />
@@ -519,7 +578,7 @@ export default function HomePage() {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M8 7V3L4 14h7v7l9-11h-7z"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
                             />
                           </svg>
                         </div>
@@ -589,8 +648,10 @@ export default function HomePage() {
 
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center">
           <div className="text-center text-white mb-70 px-4">
-            <h2 className="font-bold text-balance text-shimmer
-                 text-[clamp(1.125rem,calc(0.75rem+2.5vw),2.5rem)]">
+            <h2
+                className="font-bold text-balance text-shimmer
+                 text-[clamp(1.125rem,calc(0.75rem+2.5vw),2.5rem)]"
+            >
               您的专属宇宙证书正在生成........
             </h2>
           </div>
@@ -653,30 +714,79 @@ export default function HomePage() {
           <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <div className="max-w-4xl mx-4">
+        <div className="relative z-10 min-h-screen flex items-center justify-center py-8">
+          <div className="max-w-6xl mx-4">
             <Card className="bg-white/10 backdrop-blur-sm border-white/30 p-8 rounded-3xl">
-              <div className="text-center text-white mb-8">
-                <h2 className="text-3xl font-bold mb-4">您的专属宇宙证书</h2>
-              </div>
+              {/*<div className="text-center text-white mb-8">*/}
+              {/*  <h2 className="text-3xl font-bold mb-4">您的专属宇宙证书</h2>*/}
+              {/*  <p className="text-lg opacity-80">恭喜您获得浙江实验室专属宇宙证书</p>*/}
+              {/*</div>*/}
 
-              <div className="bg-white rounded-lg p-6 shadow-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={60} height={30} />
+              {/* Certificate display */}
+              {certificateData && (
+                  <div className="space-y-6">
+                    {/* Certificate display */}
+                    <div className="flex justify-center">
+                      <div
+                          className="bg-white rounded-lg shadow-2xl overflow-hidden"
+                          style={{ width: "800px", height: "533px" }}
+                      >
+                        <div className="transform scale-[0.67] origin-top-left">
+                          <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Controls */}
+                    <div className="flex flex-col items-center space-y-4">
+                      {/* Front/Back toggle */}
+                      <div className="flex space-x-4">
+                        <Button
+                            onClick={() => setShowCertificateBack(false)}
+                            variant={!showCertificateBack ? "default" : "outline"}
+                            className="px-6 py-2"
+                        >
+                          正面
+                        </Button>
+                        <Button
+                            onClick={() => setShowCertificateBack(true)}
+                            variant={showCertificateBack ? "default" : "outline"}
+                            className="px-6 py-2"
+                        >
+                          背面
+                        </Button>
+                      </div>
+
+                      {/* Download buttons */}
+                      <div className="flex space-x-4">
+                        <Button
+                            onClick={downloadCertificateAsPDF}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full"
+                        >
+                          下载PDF
+                        </Button>
+                        <Button
+                            onClick={downloadCertificateAsImage}
+                            className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-8 py-3 rounded-full"
+                        >
+                          下载图片
+                        </Button>
+                      </div>
+
+                      {/* Certificate info */}
+                      <div className="text-center text-white/80 text-sm space-y-1">
+                        <p>证书编号: {certificateData.fullNo}</p>
+                        <p>生成时间: {new Date().toLocaleString("zh-CN")}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-800">
-                      {certificateData?.name || formData.name || "胡渠楠"}
-                    </p>
-                    <p className="text-sm text-gray-600">{certificateData?.workNo || formData.employeeId || "002857"}</p>
-                    <p className="text-sm text-gray-600">{certificateData?.fullNo || "SCS01-0880-0001"}</p>
-                    {certificateData?.daysToTarget && (
-                        <p className="text-xs text-gray-500 mt-1">工作天数: {certificateData.daysToTarget} 天</p>
-                    )}
+              )}
+
+              {error && (
+                  <div className="mt-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg">
+                    <p className="text-red-200 text-center">{error}</p>
                   </div>
-                </div>
-              </div>
+              )}
             </Card>
           </div>
         </div>
