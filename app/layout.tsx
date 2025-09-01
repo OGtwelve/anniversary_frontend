@@ -14,8 +14,14 @@ const notoSansSC = Noto_Sans_SC({
 })
 
 export const metadata: Metadata = {
-  title: "浙江实验室 - 探索宇宙的钥匙",
-  description: "浙江实验室宇宙主题互动体验"
+  title: "之江实验室-8周年活动网站",
+  description: "之江实验室宇宙主题互动体验",
+  keywords: "浙江实验室,之江实验室",
+  icons:{
+    icon: "/images/favicon.ico",
+    shortcut: "/images/favicon.ico",
+    apple: "/images/favicon.ico",
+  }
 }
 
 export default function RootLayout({
