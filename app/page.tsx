@@ -35,7 +35,7 @@ interface CertificateData {
 }
 
 export default function HomePage() {
-  const [currentStep, setCurrentStep] = useState("hero") // hero, quiz, form, loading, result
+  const [currentStep, setCurrentStep] = useState("form") // hero, quiz, form, loading, result
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [formData, setFormData] = useState({
     name: "",
@@ -411,7 +411,7 @@ export default function HomePage() {
   const renderFormSection = () => (
       <div className="min-h-screen relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
+          <Image src="/images/form-background.png" alt="Space background" fill className="object-cover" />
         </div>
 
         <div className="absolute top-8 left-22 z-10">
@@ -576,7 +576,7 @@ export default function HomePage() {
   const renderLoadingSection = () => (
       <div className="min-h-screen relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/images/loading_background.png" alt="Loading background" fill className="object-cover" />
+          <Image src="/images/loading-background.png" alt="Loading background" fill className="object-cover" />
         </div>
 
         <div className="absolute top-8 left-22 z-10">
@@ -587,51 +587,54 @@ export default function HomePage() {
           <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <div className="text-center text-white">
-            <h2 className="text-2xl font-bold mb-8 text-balance">您的专属宇宙证书正在生成........</h2>
-
-            {error && (
-                <div className="mb-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg max-w-md mx-auto">
-                  <p className="text-red-200 mb-4">{error}</p>
-                  <Button onClick={generateCertificate} className="bg-red-500 hover:bg-red-600">
-                    重试
-                  </Button>
-                </div>
-            )}
-
-            <div className="flex justify-center mb-8">
-              <div className="relative w-32 h-16">
-                <Image
-                    src="/images/inf_symbol.png"
-                    alt="Infinity symbol"
-                    width={128}
-                    height={64}
-                    className="animate-pulse opacity-80"
-                />
-                <div className="absolute inset-0 animate-ping">
-                  <Image
-                      src="/images/inf_symbol.png"
-                      alt="Infinity symbol"
-                      width={128}
-                      height={64}
-                      className="opacity-30"
-                  />
-                </div>
-                <div className="absolute inset-0 animate-bounce delay-300">
-                  <Image
-                      src="/images/inf_symbol.png"
-                      alt="Infinity symbol"
-                      width={128}
-                      height={64}
-                      className="opacity-50"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {!error && <p className="text-sm opacity-70">正在为您生成专属证书，请稍候...</p>}
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center">
+          <div className="text-center text-white mb-70 px-4">
+            <h2 className="font-bold text-balance text-shimmer
+                 text-[clamp(1.125rem,calc(0.75rem+2.5vw),2.5rem)]">
+              您的专属宇宙证书正在生成........
+            </h2>
           </div>
+
+          {error && (
+              <div className="mb-8 p-4 bg-red-500/20 border border-red-400/50 rounded-lg max-w-md mx-auto">
+                <p className="text-red-200 mb-4">{error}</p>
+                <Button onClick={generateCertificate} className="bg-red-500 hover:bg-red-600">
+                  重试
+                </Button>
+              </div>
+          )}
+
+          <div className="absolute inset-0">
+            <Image
+                src="/images/infinity-symbol.png"
+                alt="Infinity symbol"
+                width={900}
+                height={450}
+                className="w-full h-full object-contain opacity-80 text-shimmer"
+            />
+          </div>
+
+          {/*<div className="flex justify-center my-8">*/}
+          {/*  <div className="relative w-[900px] h-[450px] infinity-container">*/}
+          {/*    /!* Base infinity symbol - static, no breathing animation *!/*/}
+          {/*    */}
+
+          {/*    /!* Light traveling along the path - only this moves *!/*/}
+          {/*    <div className="absolute inset-0 infinity-path-light">*/}
+          {/*      <Image*/}
+          {/*          src="/images/infinity-symbol.png"*/}
+          {/*          alt="Infinity symbol light"*/}
+          {/*          width={900}*/}
+          {/*          height={450}*/}
+          {/*          className="w-full h-full object-contain"*/}
+          {/*      />*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
+
+          {/*<div className="text-center text-white mt-16">*/}
+          {/*  {!error && <p className="text-lg opacity-80 text-shimmer">正在为您生成专属证书，请稍候...</p>}*/}
+          {/*</div>*/}
         </div>
       </div>
   )
