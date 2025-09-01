@@ -422,64 +422,153 @@ export default function HomePage() {
           <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <Card className="bg-teal-900/80 backdrop-blur-sm border-cyan-400 p-8 max-w-2xl mx-4 rounded-3xl">
-            <div className="text-center text-white">
-              <h2 className="text-3xl font-bold mb-4 text-balance">点亮你的专属星图</h2>
-              <p className="text-lg mb-8 opacity-90">填写以下信息，完成你的宇宙档案</p>
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
+          <div className="w-full max-w-4xl">
+            <Card className="bg-card/10 backdrop-blur-xl border border-accent/20 shadow-2xl rounded-3xl overflow-hidden">
+              {/* Header section with gradient */}
+              <div className="bg-gradient-to-r from-primary/20 via-accent/15 to-primary/20 p-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-accent/20 rounded-full mb-4">
+                  <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-4xl font-bold mb-3 text-foreground text-balance">点亮你的专属星图</h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">填写以下信息，完成你的宇宙档案</p>
+              </div>
 
-              {error && (
-                  <div className="mb-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg">
-                    <p className="text-red-200">{error}</p>
-                  </div>
-              )}
+              {/* Form content */}
+              <div className="p-8">
+                {error && (
+                    <div className="mb-8 p-4 bg-destructive/10 border border-destructive/20 rounded-xl backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <svg
+                            className="w-5 h-5 text-destructive flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                          <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <p className="text-destructive-foreground">{error}</p>
+                      </div>
+                    </div>
+                )}
 
-              <div className="space-y-6">
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">姓名</label>
-                    <Input
-                        value={formData.name}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                        className="bg-transparent border-b-2 border-white/50 border-t-0 border-l-0 border-r-0 rounded-none text-white placeholder-white/70 focus:border-cyan-400"
-                        placeholder=""
-                        required
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                  {/* Name field */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-foreground/90 tracking-wide">
+                      姓名 <span className="text-accent">*</span>
+                    </label>
+                    <div className="cosmic-input">
+                      <Input
+                          value={formData.name}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground placeholder-muted-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all duration-300"
+                          placeholder="请输入您的姓名"
+                          required
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">工号</label>
-                    <Input
-                        value={formData.employeeId}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, employeeId: e.target.value }))}
-                        className="bg-transparent border-b-2 border-white/50 border-t-0 border-l-0 border-r-0 rounded-none text-white placeholder-white/70 focus:border-cyan-400"
-                        placeholder=""
-                        required
-                    />
+
+                  {/* Employee ID field */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-foreground/90 tracking-wide">
+                      工号 <span className="text-accent">*</span>
+                    </label>
+                    <div className="cosmic-input">
+                      <Input
+                          value={formData.employeeId}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, employeeId: e.target.value }))}
+                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground placeholder-muted-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all duration-300"
+                          placeholder="请输入您的工号"
+                          required
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">入职时间</label>
-                    <input
-                        type="date"
-                        value={formData.workTime}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, workTime: e.target.value }))}
-                        min="1998-05-12"
-                        max="2025-09-05"
-                        className="w-full bg-transparent border-b-2 border-white/50 border-t-0 border-l-0 border-r-0 rounded-none text-white placeholder-white/70 focus:border-cyan-400 focus:outline-none py-2"
-                        required
-                    />
+
+                  {/* Date picker field */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-foreground/90 tracking-wide">
+                      入职时间 <span className="text-accent">*</span>
+                    </label>
+                    <div className="date-picker-cosmic cosmic-input">
+                      <div className="relative">
+                        <input
+                            type="date"
+                            value={formData.workTime}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, workTime: e.target.value }))}
+                            min="1998-05-12"
+                            max="2025-09-05"
+                            className="w-full h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300 px-4"
+                            required
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7V3L4 14h7v7l9-11h-7z"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                        可选择范围：1998年5月12日 - 2025年9月5日
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <Button
-                    onClick={handleFormSubmit}
-                    disabled={isLoading}
-                    className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white px-12 py-3 text-lg rounded-full mt-8 disabled:opacity-50"
-                >
-                  {isLoading ? "生成中..." : "点击生成"}
-                </Button>
+                {/* Submit button */}
+                <div className="text-center">
+                  <Button
+                      onClick={handleFormSubmit}
+                      disabled={isLoading}
+                      className="h-14 px-12 bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:via-accent/90 hover:to-primary/90 text-primary-foreground text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
+                  >
+                    {isLoading ? (
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                          生成中...
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                            />
+                          </svg>
+                          点击生成
+                        </div>
+                    )}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
   )
@@ -487,7 +576,7 @@ export default function HomePage() {
   const renderLoadingSection = () => (
       <div className="min-h-screen relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/images/loading-screen.jpg" alt="Loading background" fill className="object-cover" />
+          <Image src="/images/loading_background.png" alt="Loading background" fill className="object-cover" />
         </div>
 
         <div className="absolute top-8 left-22 z-10">
@@ -512,12 +601,32 @@ export default function HomePage() {
             )}
 
             <div className="flex justify-center mb-8">
-              <div className="w-32 h-16 relative">
-                <div className="absolute inset-0 border-4 border-white/30 rounded-full animate-spin"></div>
-                <div
-                    className="absolute inset-2 border-4 border-cyan-400 rounded-full animate-spin"
-                    style={{ animationDirection: "reverse" }}
-                ></div>
+              <div className="relative w-32 h-16">
+                <Image
+                    src="/images/inf_symbol.png"
+                    alt="Infinity symbol"
+                    width={128}
+                    height={64}
+                    className="animate-pulse opacity-80"
+                />
+                <div className="absolute inset-0 animate-ping">
+                  <Image
+                      src="/images/inf_symbol.png"
+                      alt="Infinity symbol"
+                      width={128}
+                      height={64}
+                      className="opacity-30"
+                  />
+                </div>
+                <div className="absolute inset-0 animate-bounce delay-300">
+                  <Image
+                      src="/images/inf_symbol.png"
+                      alt="Infinity symbol"
+                      width={128}
+                      height={64}
+                      className="opacity-50"
+                  />
+                </div>
               </div>
             </div>
 
