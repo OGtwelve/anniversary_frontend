@@ -211,18 +211,18 @@ export default function HomePage() {
         <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" priority />
       </div>
 
-      <div className="absolute top-8 left-8 z-10">
-        <Image src="/images/topleft-logo.png" alt="Left logo" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-8 left-22 z-10">
+        <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
       </div>
 
-      <div className="absolute top-8 right-8 z-10">
-        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-2 right-15 z-10">
+        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-end pr-16">
+      <div className="relative z-10 min-h-screen flex items-center justify-end pr-24 right-15">
         <div className="text-right text-white max-w-lg">
-          <h1 className="text-5xl font-bold mb-6 text-balance">探索宇宙的钥匙</h1>
-          <p className="text-xl mb-8 opacity-90 leading-relaxed">回答几个问题，解锁属于你的星际祝福</p>
+          <h1 className="text-6xl font-bold mb-6 text-balance">探索宇宙的钥匙</h1>
+          <p className="text-2xl mb-8 opacity-90 leading-relaxed">回答几个问题，解锁属于你的星际祝福</p>
           <Button
             onClick={() => setCurrentStep("quiz")}
             className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white px-8 py-3 text-lg rounded-full transition-all duration-300 transform hover:scale-105"
@@ -240,12 +240,12 @@ export default function HomePage() {
         <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
       </div>
 
-      <div className="absolute top-8 left-8 z-10">
-        <Image src="/images/topleft-logo.png" alt="Left logo" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-8 left-22 z-10">
+        <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
       </div>
 
-      <div className="absolute top-8 right-8 z-10">
-        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-2 right-15 z-10">
+        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center">
@@ -314,12 +314,12 @@ export default function HomePage() {
         <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
       </div>
 
-      <div className="absolute top-8 left-8 z-10">
-        <Image src="/images/topleft-logo.png" alt="Left logo" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-8 left-22 z-10">
+        <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
       </div>
 
-      <div className="absolute top-8 right-8 z-10">
-        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-2 right-15 z-10">
+        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center">
@@ -388,12 +388,12 @@ export default function HomePage() {
         <Image src="/images/loading-screen.jpg" alt="Loading background" fill className="object-cover" />
       </div>
 
-      <div className="absolute top-8 left-8 z-10">
-        <Image src="/images/topleft-logo.png" alt="Left logo" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-8 left-22 z-10">
+        <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
       </div>
 
-      <div className="absolute top-8 right-8 z-10">
-        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-2 right-15 z-10">
+        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center">
@@ -431,12 +431,12 @@ export default function HomePage() {
         <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
       </div>
 
-      <div className="absolute top-8 left-8 z-10">
-        <Image src="/images/topleft-logo.png" alt="Left logo" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-8 left-22 z-10">
+        <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
       </div>
 
-      <div className="absolute top-8 right-8 z-10">
-        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={120} height={60} className="opacity-90" />
+      <div className="absolute top-2 right-15 z-10">
+        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
       </div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center">
