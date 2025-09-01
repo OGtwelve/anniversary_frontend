@@ -272,11 +272,14 @@ export default function HomePage() {
 
       const dataUrl = await domtoimage.toPng(certificateRef.current, {
         quality: 1.0,
-        width: 1200,
-        height: 800,
+        width: 800, // Match certificate component width
+        height: 600, // Match certificate component height
+        bgcolor: "transparent", // Transparent background to avoid capturing extra elements
         style: {
           transform: "scale(1)",
           transformOrigin: "top left",
+          margin: "0",
+          padding: "0",
         },
         filter: (node: Node) => {
           // Skip script and style tags - check if node is Element before accessing tagName
@@ -293,11 +296,11 @@ export default function HomePage() {
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "mm",
-        format: "a4",
+        format: [210, 148], // Custom format to match certificate aspect ratio (4:3)
       })
 
-      const imgWidth = 297 // A4 landscape width in mm
-      const imgHeight = 210 // A4 landscape height in mm
+      const imgWidth = 210 // Custom width in mm
+      const imgHeight = 148 // Custom height in mm (maintains 4:3 ratio)
 
       pdf.addImage(dataUrl, "PNG", 0, 0, imgWidth, imgHeight)
 
@@ -730,14 +733,7 @@ export default function HomePage() {
                   <div className="space-y-6">
                     {/* Certificate display */}
                     <div className="flex justify-center">
-                      <div
-                          className="bg-white rounded-lg shadow-2xl overflow-hidden"
-                          style={{ width: "800px", height: "533px" }}
-                      >
-                        <div style={{ transform: "scale(0.67)", transformOrigin: "top left" }}>
-                          <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
-                        </div>
-                      </div>
+                      <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
                     </div>
 
                     {/* Controls */}

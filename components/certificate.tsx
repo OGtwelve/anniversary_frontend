@@ -19,64 +19,58 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
     return (
         <div
             ref={ref}
-            className="relative w-[1200px] h-[800px] bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"
+            className="relative w-[800px] h-[600px] bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden rounded-3xl"
         >
             <div className="absolute inset-0 bg-[url('/images/background.jpg')] bg-cover bg-center opacity-80"></div>
 
             {showBack ? (
                 // Certificate Back
                 <div className="relative w-full h-full">
-                    <Image src="/images/certificate-back.png" alt="Certificate Back" fill className="object-contain" />
+                    <Image src="/images/certificate-back.png" alt="Certificate Back" fill className="object-cover" />
 
                     <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">
                         <div className="text-2xl font-medium leading-relaxed tracking-wide max-w-2xl">
                             <div className="mb-4">*祝福语*</div>
-                            <div className="mb-4">此证书证明持有人在浙江实验室工作期间</div>
-                            <div className="mb-4">展现了卓越的专业能力和奉献精神</div>
-                            <div className="mb-4">为实验室的科研发展做出了重要贡献</div>
-                            <div>特此颁发此专属宇宙证书以资纪念</div>
                         </div>
                     </div>
 
-                    <div className="absolute bottom-20 right-35 text-right text-white">
+                    <div className="absolute bottom-13 right-9 text-right text-white">
                         {/* Certificate number with white background and work number on same line */}
-                        <div className="flex items-center justify-end gap-3 mb-6">
+                        <div className="flex items-center justify-end gap-3 mb-5">
                             {/* Name at the top */}
-                            <div className="text-4xl font-bold tracking-wide mt-1">{data.name}</div>
-                            <div className="bg-white text-black px-6 py-1 text-2xl font-bold rounded">
-                                {data.workNo}
-                            </div>
+                            <div className="text-3xl tracking-wide mt-1">{data.name}</div>
+                            <div className="bg-white text-black px-4 text-2xl rounded">{data.workNo}</div>
                         </div>
 
                         {/* Full certificate code - single line only */}
-                        <div className="font-medium text-gray-200 text-4xl
-                leading-none tracking-[-0.06em]">
+                        <div
+                            className="text-gray-200 text-2xl
+                leading-none tracking-[-0.06em]"
+                        >
                             {data.fullNo}
                         </div>
-
                     </div>
                 </div>
             ) : (
                 // Certificate Front
                 <div className="relative w-full h-full">
-                    <Image src="/images/certificate-front.png" alt="Certificate Front" fill className="object-contain" />
+                    <Image src="/images/certificate-front.png" alt="Certificate Front" fill className="object-cover" />
 
-                    <div className="absolute bottom-20 right-35 text-right text-white">
+                    <div className="absolute bottom-13 right-9 text-right text-white">
                         {/* Certificate number with white background and work number on same line */}
-                        <div className="flex items-center justify-end gap-3 mb-6">
+                        <div className="flex items-center justify-end gap-3 mb-5">
                             {/* Name at the top */}
-                            <div className="text-4xl font-bold tracking-wide mt-1">{data.name}</div>
-                            <div className="bg-white text-black px-6 py-1 text-2xl font-bold rounded">
-                                {data.workNo}
-                            </div>
+                            <div className="text-3xl tracking-wide mt-1">{data.name}</div>
+                            <div className="bg-white text-black px-4 text-2xl rounded">{data.workNo}</div>
                         </div>
 
                         {/* Full certificate code - single line only */}
-                        <div className="font-medium text-gray-200 text-4xl
-                leading-none tracking-[-0.06em]">
+                        <div
+                            className="text-gray-200 text-2xl
+                leading-none tracking-[-0.06em]"
+                        >
                             {data.fullNo}
                         </div>
-
                     </div>
                 </div>
             )}
