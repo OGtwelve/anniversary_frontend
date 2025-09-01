@@ -43,9 +43,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[v0] Certificate issue error:", error)
 
-    const fallbackName = "用户"
+    const fallbackName = "测试用户"
     const fallbackStartDate = "2023-09-01"
-    const fallbackWorkNo = "00001"
+    const fallbackWorkNo = "123456"
 
     const currentDate = new Date()
     const startDateObj = new Date(fallbackStartDate)

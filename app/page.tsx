@@ -36,6 +36,7 @@ interface CertificateData {
 
 export default function HomePage() {
   const [currentStep, setCurrentStep] = useState("hero") // hero, quiz, form, loading, result
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [formData, setFormData] = useState({
     name: "",
     employeeId: "",
@@ -138,14 +139,19 @@ export default function HomePage() {
         }),
       })
 
+      if (!response.ok) {
+        setError(`Certificate API request failed with status: ${response.status}`)
+        return
+      }
+
       const result = await response.json()
 
-      if (result.message === "恭喜成功" && result.data) {
+      if ((result.message === "恭喜成功" || result.message === "ok" || result.message === "保存成功") && result.data) {
         setCertificateData(result.data)
         console.log("[v0] Certificate generated successfully:", result.data)
         setCurrentStep("result")
       } else {
-        throw new Error(result.message || "Certificate generation failed")
+        setError(result.message || "Certificate generation failed")
       }
     } catch (err) {
       console.error("[v0] Certificate generation error:", err)
@@ -168,6 +174,19 @@ export default function HomePage() {
       setError("请输入入职时间")
       return
     }
+    const selectedDate = new Date(formData.workTime)
+    const maxDateObj = new Date("2025-09-05")
+    const minDateObj = new Date("1998-05-12")
+
+    if (selectedDate > maxDateObj) {
+      setError("入职时间不能超过2025年9月5日")
+      return
+    }
+    if (selectedDate < minDateObj) {
+      setError("入职时间不能早于1998年5月12日")
+      return
+    }
+
     if (!passToken) {
       setError("请先完成问答验证")
       return
@@ -175,6 +194,56 @@ export default function HomePage() {
 
     setError("")
     setCurrentStep("loading")
+  }
+
+  const handleOptionSelect = (questionId: number, optionId: number) => {
+    setSelectedAnswers((prev) => {
+      const existingIndex = prev.findIndex((a) => a.questionId === questionId)
+      if (existingIndex >= 0) {
+        const updated = [...prev]
+        updated[existingIndex] = { questionId, optionId }
+        return updated
+      } else {
+        return [...prev, { questionId, optionId }]
+      }
+    })
+
+    if (questionId === 1) {
+      const optionMap: { [key: number]: string } = {
+        1: "bigdipper",
+        2: "galaxy",
+        3: "orion",
+        4: "other",
+      }
+      setFormData((prev) => ({ ...prev, constellation: optionMap[optionId] || "other" }))
+    }
+  }
+
+  const handleNextQuestion = () => {
+    if (!quizData) return
+
+    const currentQuestion = quizData.questions[currentQuestionIndex]
+    const hasAnswered = selectedAnswers.some((a) => a.questionId === currentQuestion.id)
+
+    if (!hasAnswered) {
+      setError("请先选择一个答案")
+      return
+    }
+
+    setError("")
+
+    if (currentQuestionIndex === quizData.questions.length - 1) {
+      validateQuizAnswers()
+    } else {
+      setCurrentQuestionIndex((prev) => prev + 1)
+    }
+  }
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((prev) => prev - 1)
+      setError("")
+    }
   }
 
   useEffect(() => {
@@ -192,18 +261,6 @@ export default function HomePage() {
       fetchQuizData()
     }
   }, [currentStep, quizData])
-
-  const handleOptionSelect = (questionId: number, optionId: number) => {
-    setSelectedAnswers([{ questionId, optionId }])
-
-    const optionMap: { [key: number]: string } = {
-      1: "bigdipper",
-      2: "galaxy",
-      3: "orion",
-      4: "other",
-    }
-    setFormData((prev) => ({ ...prev, constellation: optionMap[optionId] || "other" }))
-  }
 
   const renderHeroSection = () => (
       <div className="min-h-screen relative overflow-hidden">
@@ -266,33 +323,76 @@ export default function HomePage() {
                   </div>
               ) : quizData && quizData.questions.length > 0 ? (
                   <>
-                    <h2 className="text-2xl font-bold mb-8 text-balance">{quizData.questions[0].content}</h2>
-
-                    <div className="space-y-4 mb-8">
-                      {quizData.questions[0].options.map((option) => (
-                          <button
-                              key={option.id}
-                              onClick={() => handleOptionSelect(quizData.questions[0].id, option.id)}
-                              className={`w-full text-left p-4 rounded-lg transition-all duration-300 border ${
-                                  selectedAnswers.some((a) => a.optionId === option.id)
-                                      ? "bg-cyan-400/30 border-cyan-400"
-                                      : "bg-white/10 hover:bg-white/20 border-cyan-400/30 hover:border-cyan-400/60"
-                              }`}
-                          >
-                      <span className="text-lg">
-                        {String.fromCharCode(65 + option.idxNo - 1)}. {option.content}
-                      </span>
-                          </button>
-                      ))}
+                    <div className="mb-6">
+                      <div className="flex justify-between text-sm opacity-70 mb-2">
+                        <span>问题 {currentQuestionIndex + 1}</span>
+                        <span>共 {quizData.questions.length} 题</span>
+                      </div>
+                      <div className="w-full bg-white/20 rounded-full h-2">
+                        <div
+                            className="bg-cyan-400 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${((currentQuestionIndex + 1) / quizData.questions.length) * 100}%` }}
+                        ></div>
+                      </div>
                     </div>
 
-                    <Button
-                        onClick={validateQuizAnswers}
-                        disabled={selectedAnswers.length === 0 || isLoading}
-                        className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-8 py-3 rounded-full disabled:opacity-50"
-                    >
-                      {isLoading ? "验证中..." : "下一题"}
-                    </Button>
+                    <h2 className="text-2xl font-bold mb-8 text-balance">
+                      {quizData.questions[currentQuestionIndex].content}
+                    </h2>
+
+                    <div className="space-y-4 mb-8">
+                      {quizData.questions[currentQuestionIndex].options.map((option) => {
+                        const currentQuestion = quizData.questions[currentQuestionIndex]
+                        const isSelected = selectedAnswers.some(
+                            (a) => a.questionId === currentQuestion.id && a.optionId === option.id,
+                        )
+
+                        return (
+                            <button
+                                key={option.id}
+                                onClick={() => handleOptionSelect(currentQuestion.id, option.id)}
+                                className={`w-full text-left p-4 rounded-lg transition-all duration-300 border ${
+                                    isSelected
+                                        ? "bg-cyan-400/30 border-cyan-400"
+                                        : "bg-white/10 hover:bg-white/20 border-cyan-400/30 hover:border-cyan-400/60"
+                                }`}
+                            >
+                        <span className="text-lg">
+                          {String.fromCharCode(65 + option.idxNo - 1)}. {option.content}
+                        </span>
+                            </button>
+                        )
+                      })}
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <Button
+                          onClick={handlePreviousQuestion}
+                          disabled={currentQuestionIndex === 0}
+                          variant="outline"
+                          className="border-white text-white hover:bg-white/10 px-6 py-2 rounded-full disabled:opacity-30 bg-transparent"
+                      >
+                        上一题
+                      </Button>
+
+                      <Button
+                          onClick={handleNextQuestion}
+                          disabled={isLoading}
+                          className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-8 py-3 rounded-full disabled:opacity-50"
+                      >
+                        {isLoading
+                            ? "验证中..."
+                            : currentQuestionIndex === quizData.questions.length - 1
+                                ? "完成答题"
+                                : "下一题"}
+                      </Button>
+                    </div>
+
+                    {error && (
+                        <div className="mt-4 p-3 bg-red-500/20 border border-red-400/50 rounded-lg">
+                          <p className="text-red-200 text-sm">{error}</p>
+                        </div>
+                    )}
                   </>
               ) : (
                   <div>
@@ -358,11 +458,13 @@ export default function HomePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">入职时间</label>
-                    <Input
+                    <input
+                        type="date"
                         value={formData.workTime}
                         onChange={(e) => setFormData((prev) => ({ ...prev, workTime: e.target.value }))}
-                        className="bg-transparent border-b-2 border-white/50 border-t-0 border-l-0 border-r-0 rounded-none text-white placeholder-white/70 focus:border-cyan-400"
-                        placeholder="YYYY-MM-DD"
+                        min="1998-05-12"
+                        max="2025-09-05"
+                        className="w-full bg-transparent border-b-2 border-white/50 border-t-0 border-l-0 border-r-0 rounded-none text-white placeholder-white/70 focus:border-cyan-400 focus:outline-none py-2"
                         required
                     />
                   </div>
@@ -446,63 +548,22 @@ export default function HomePage() {
                 <h2 className="text-3xl font-bold mb-4">您的专属宇宙证书</h2>
               </div>
 
-              <div className="bg-white/90 rounded-2xl p-8 text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-cyan-50"></div>
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-6">
-                    <Image src="/images/topleft-logo.png" alt="Left logo" width={80} height={40} />
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-blue-900 mb-2">奋进八载</h3>
-                      <h3 className="text-2xl font-bold text-blue-900">攀登巅峰</h3>
-                      <p className="text-sm text-gray-600 mt-2">ANNIVERSARY OF ZHEJIANG LAB</p>
-                    </div>
-                    <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={80} height={40} />
+              <div className="bg-white rounded-lg p-6 shadow-lg">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={60} height={30} />
                   </div>
-
-                  <div className="bg-white rounded-lg p-6 shadow-lg">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={60} height={30} />
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-gray-800">
-                          {certificateData?.name || formData.name || "胡渠楠"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {certificateData?.workNo || formData.employeeId || "002857"}
-                        </p>
-                        <p className="text-sm text-gray-600">{certificateData?.fullNo || "SCS01-0880-0001"}</p>
-                        {certificateData?.daysToTarget && (
-                            <p className="text-xs text-gray-500 mt-1">工作天数: {certificateData.daysToTarget} 天</p>
-                        )}
-                      </div>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-gray-800">
+                      {certificateData?.name || formData.name || "胡渠楠"}
+                    </p>
+                    <p className="text-sm text-gray-600">{certificateData?.workNo || formData.employeeId || "002857"}</p>
+                    <p className="text-sm text-gray-600">{certificateData?.fullNo || "SCS01-0880-0001"}</p>
+                    {certificateData?.daysToTarget && (
+                        <p className="text-xs text-gray-500 mt-1">工作天数: {certificateData.daysToTarget} 天</p>
+                    )}
                   </div>
                 </div>
-              </div>
-
-              <div className="text-center mt-8">
-                <Button
-                    onClick={() => setCurrentStep("hero")}
-                    className="bg-gradient-to-r from-cyan-400 to-green-500 hover:from-cyan-500 hover:to-green-600 text-white px-8 py-3 rounded-full mr-4"
-                >
-                  点击下载PDF
-                </Button>
-                <Button
-                    onClick={() => {
-                      setCurrentStep("hero")
-                      setFormData({ name: "", employeeId: "", workTime: "", constellation: "" })
-                      setQuizData(null)
-                      setSelectedAnswers([])
-                      setPassToken("")
-                      setCertificateData(null)
-                      setError("")
-                    }}
-                    variant="outline"
-                    className="border-white text-white hover:bg-white/10 px-8 py-3 rounded-full"
-                >
-                  重新开始
-                </Button>
               </div>
             </Card>
           </div>
