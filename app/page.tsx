@@ -346,7 +346,7 @@ export default function HomePage() {
           <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
         </div>
 
-        <div className="absolute top-1/2 right-32 transform -translate-y-1/2 z-20 pointer-events-none">
+        <div className="absolute top-1/2 right-32 transform -translate-y-1/2 z-10 pointer-events-none">
           <Image
               src="/images/topmid-line.png"
               alt="Decorative line"
@@ -389,8 +389,16 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <Card className="bg-black/20 backdrop-blur-sm border-cyan-400/30 p-8 max-w-2xl mx-4">
-            <div className="text-center text-white">
+          <div
+              className="bg-black/40 p-12 max-w-2xl mx-4 shadow-2xl relative"
+              style={{
+                backgroundImage: "url('/images/quiz-left-right.png')",
+                backgroundSize: "100% 100%",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+              }}
+          >
+            <div className="text-center text-white px-8">
               {isLoading ? (
                   <div>
                     <h2 className="text-2xl font-bold mb-8 text-balance">加载问题中...</h2>
@@ -406,24 +414,24 @@ export default function HomePage() {
                   </div>
               ) : quizData && quizData.questions.length > 0 ? (
                   <>
-                    <div className="mb-6">
-                      <div className="flex justify-between text-sm opacity-70 mb-2">
+                    <div className="mb-8">
+                      <div className="flex justify-between text-sm opacity-70 mb-4">
                         <span>问题 {currentQuestionIndex + 1}</span>
                         <span>共 {quizData.questions.length} 题</span>
                       </div>
-                      <div className="w-full bg-white/20 rounded-full h-2">
+                      <div className="w-full bg-white/20 rounded-full h-3 shadow-inner">
                         <div
-                            className="bg-cyan-400 h-2 rounded-full transition-all duration-300"
+                            className="bg-gradient-to-r from-cyan-400 to-blue-500 h-3 rounded-full transition-all duration-500 shadow-lg"
                             style={{ width: `${((currentQuestionIndex + 1) / quizData.questions.length) * 100}%` }}
                         ></div>
                       </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold mb-8 text-balance">
+                    <h2 className="text-3xl font-bold mb-10 text-balance leading-relaxed">
                       {quizData.questions[currentQuestionIndex].content}
                     </h2>
 
-                    <div className="space-y-4 mb-8">
+                    <div className="space-y-4 mb-10">
                       {quizData.questions[currentQuestionIndex].options.map((option) => {
                         const currentQuestion = quizData.questions[currentQuestionIndex]
                         const isSelected = selectedAnswers.some(
@@ -434,13 +442,13 @@ export default function HomePage() {
                             <button
                                 key={option.id}
                                 onClick={() => handleOptionSelect(currentQuestion.id, option.id)}
-                                className={`w-full text-left p-4 rounded-lg transition-all duration-300 border ${
+                                className={`w-full text-left p-5 rounded-xl transition-all duration-300 border-2 shadow-lg ${
                                     isSelected
-                                        ? "bg-cyan-400/30 border-cyan-400"
-                                        : "bg-white/10 hover:bg-white/20 border-cyan-400/30 hover:border-cyan-400/60"
+                                        ? "bg-cyan-400/30 border-cyan-400 shadow-cyan-400/20"
+                                        : "bg-blue-900/40 hover:bg-blue-800/50 border-blue-400/40 hover:border-blue-400/70 hover:shadow-blue-400/20"
                                 }`}
                             >
-                        <span className="text-lg">
+                        <span className="text-lg font-medium">
                           {String.fromCharCode(65 + option.idxNo - 1)}. {option.content}
                         </span>
                             </button>
@@ -453,7 +461,7 @@ export default function HomePage() {
                           onClick={handlePreviousQuestion}
                           disabled={currentQuestionIndex === 0}
                           variant="outline"
-                          className="border-white text-white hover:bg-white/10 px-6 py-2 rounded-full disabled:opacity-30 bg-transparent"
+                          className="border-2 border-white/50 text-white hover:bg-white/10 px-8 py-3 rounded-full disabled:opacity-30 bg-transparent font-medium"
                       >
                         上一题
                       </Button>
@@ -461,7 +469,7 @@ export default function HomePage() {
                       <Button
                           onClick={handleNextQuestion}
                           disabled={isLoading}
-                          className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-8 py-3 rounded-full disabled:opacity-50"
+                          className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-10 py-3 rounded-full disabled:opacity-50 font-medium shadow-lg"
                       >
                         {isLoading
                             ? "验证中..."
@@ -472,7 +480,7 @@ export default function HomePage() {
                     </div>
 
                     {error && (
-                        <div className="mt-4 p-3 bg-red-500/20 border border-red-400/50 rounded-lg">
+                        <div className="mt-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg">
                           <p className="text-red-200 text-sm">{error}</p>
                         </div>
                     )}
@@ -486,7 +494,7 @@ export default function HomePage() {
                   </div>
               )}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
   )
