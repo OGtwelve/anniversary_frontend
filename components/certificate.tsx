@@ -27,6 +27,17 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
                 // Certificate Back
                 <div className="relative w-full h-full">
                     <Image src="/images/certificate-back.png" alt="Certificate Back" fill className="object-contain" />
+
+                    <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">
+                        <div className="text-2xl font-medium leading-relaxed tracking-wide max-w-2xl">
+                            <div className="mb-4">*祝福语*</div>
+                            <div className="mb-4">此证书证明持有人在浙江实验室工作期间</div>
+                            <div className="mb-4">展现了卓越的专业能力和奉献精神</div>
+                            <div className="mb-4">为实验室的科研发展做出了重要贡献</div>
+                            <div>特此颁发此专属宇宙证书以资纪念</div>
+                        </div>
+                    </div>
+
                     <div className="absolute bottom-20 right-35 text-right text-white">
                         {/* Certificate number with white background and work number on same line */}
                         <div className="flex items-center justify-end gap-3 mb-6">

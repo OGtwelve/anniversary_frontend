@@ -15,8 +15,7 @@ const notoSansSC = Noto_Sans_SC({
 
 export const metadata: Metadata = {
   title: "浙江实验室 - 探索宇宙的钥匙",
-  description: "浙江实验室宇宙主题互动体验",
-  generator: "v0.app",
+  description: "浙江实验室宇宙主题互动体验"
 }
 
 export default function RootLayout({

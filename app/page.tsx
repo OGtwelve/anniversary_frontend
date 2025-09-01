@@ -251,20 +251,45 @@ export default function HomePage() {
   }
 
   const downloadCertificateAsPDF = async () => {
-    if (!certificateRef.current || !certificateData) return
+    if (!certificateRef.current || !certificateData) {
+      console.error("[v0] Missing certificate ref or data")
+      setError("证书数据不完整，无法下载")
+      return
+    }
 
     try {
-      const html2canvas = (await import("html2canvas")).default
+      setIsLoading(true)
+      setError("")
+      console.log("[v0] Starting PDF generation with dom-to-image...")
+
+      const domtoimage = (await import("dom-to-image")).default
       const jsPDF = (await import("jspdf")).default
 
-      const canvas = await html2canvas(certificateRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
+      console.log("[v0] Libraries loaded, capturing with dom-to-image...")
+
+      // Wait for images to load
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const dataUrl = await domtoimage.toPng(certificateRef.current, {
+        quality: 1.0,
+        width: 1200,
+        height: 800,
+        style: {
+          transform: "scale(1)",
+          transformOrigin: "top left",
+        },
+        filter: (node: Node) => {
+          // Skip script and style tags - check if node is Element before accessing tagName
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element
+            return element.tagName !== "SCRIPT" && element.tagName !== "STYLE"
+          }
+          return true
+        },
       })
 
-      const imgData = canvas.toDataURL("image/png")
+      console.log("[v0] Image data generated with dom-to-image")
+
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "mm",
@@ -272,36 +297,19 @@ export default function HomePage() {
       })
 
       const imgWidth = 297 // A4 landscape width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      const imgHeight = 210 // A4 landscape height in mm
 
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight)
-      pdf.save(`${certificateData.name}-宇宙证书.pdf`)
+      pdf.addImage(dataUrl, "PNG", 0, 0, imgWidth, imgHeight)
+
+      const fileName = `${certificateData.name}-宇宙证书-${showCertificateBack ? "背面" : "正面"}.pdf`
+      pdf.save(fileName)
+
+      console.log("[v0] PDF download completed successfully:", fileName)
     } catch (error) {
-      console.error("PDF generation failed:", error)
-      setError("PDF生成失败，请重试")
-    }
-  }
-
-  const downloadCertificateAsImage = async () => {
-    if (!certificateRef.current || !certificateData) return
-
-    try {
-      const html2canvas = (await import("html2canvas")).default
-
-      const canvas = await html2canvas(certificateRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-      })
-
-      const link = document.createElement("a")
-      link.download = `${certificateData.name}-宇宙证书.png`
-      link.href = canvas.toDataURL("image/png")
-      link.click()
-    } catch (error) {
-      console.error("Image generation failed:", error)
-      setError("图片生成失败，请重试")
+      console.error("[v0] PDF generation failed:", error)
+      setError(`PDF生成失败: ${error instanceof Error ? error.message : "未知错误"}`)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -492,7 +500,7 @@ export default function HomePage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-4.674z"
                     />
                   </svg>
                 </div>
@@ -549,7 +557,7 @@ export default function HomePage() {
                       <Input
                           value={formData.employeeId}
                           onChange={(e) => setFormData((prev) => ({ ...prev, employeeId: e.target.value }))}
-                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground placeholder-muted-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300 px-4"
+                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300 px-4"
                           placeholder="请输入您的工号"
                           required
                       />
@@ -717,11 +725,6 @@ export default function HomePage() {
         <div className="relative z-10 min-h-screen flex items-center justify-center py-8">
           <div className="max-w-6xl mx-4">
             <Card className="bg-white/10 backdrop-blur-sm border-white/30 p-8 rounded-3xl">
-              {/*<div className="text-center text-white mb-8">*/}
-              {/*  <h2 className="text-3xl font-bold mb-4">您的专属宇宙证书</h2>*/}
-              {/*  <p className="text-lg opacity-80">恭喜您获得浙江实验室专属宇宙证书</p>*/}
-              {/*</div>*/}
-
               {/* Certificate display */}
               {certificateData && (
                   <div className="space-y-6">
@@ -731,7 +734,7 @@ export default function HomePage() {
                           className="bg-white rounded-lg shadow-2xl overflow-hidden"
                           style={{ width: "800px", height: "533px" }}
                       >
-                        <div className="transform scale-[0.67] origin-top-left">
+                        <div style={{ transform: "scale(0.67)", transformOrigin: "top left" }}>
                           <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
                         </div>
                       </div>
@@ -761,15 +764,10 @@ export default function HomePage() {
                       <div className="flex space-x-4">
                         <Button
                             onClick={downloadCertificateAsPDF}
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full"
+                            disabled={isLoading}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full disabled:opacity-50"
                         >
-                          下载PDF
-                        </Button>
-                        <Button
-                            onClick={downloadCertificateAsImage}
-                            className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-8 py-3 rounded-full"
-                        >
-                          下载图片
+                          {isLoading ? "生成中..." : "下载PDF"}
                         </Button>
                       </div>
 
