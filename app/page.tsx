@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import Certificate from "@/components/certificate"
+import {display} from "html2canvas/dist/types/css/property-descriptors/display";
 
 interface QuizOption {
   id: number
@@ -514,31 +515,27 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
-          <div className="w-full max-w-4xl">
-            <Card className="bg-card/10 backdrop-blur-xl border border-accent/20 shadow-2xl rounded-3xl overflow-hidden">
-              {/* Header section with gradient */}
-              <div className="bg-gradient-to-r from-primary/20 via-accent/15 to-primary/20 p-8 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-accent/20 rounded-full mb-4">
-                  <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-4.674z"
-                    />
-                  </svg>
-                </div>
-                <h2 className="text-4xl font-bold mb-3 text-foreground text-balance">点亮你的专属星图</h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">填写以下信息，完成你的宇宙档案</p>
+          <div className="w-full max-w-5xl">
+            <div
+                className="relative p-16 shadow-2xl rounded-3xl overflow-hidden"
+                style={{
+                  backgroundImage: "url('/images/form-data-style.png')",
+                  backgroundSize: "150% 150%",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                }}
+            >
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold mb-4 text-white text-balance">点亮你的专属星图</h2>
+                <p className="text-lg text-white/80 leading-relaxed">填写以下信息，完成你的宇宙档案</p>
               </div>
 
-              {/* Form content */}
-              <div className="p-8">
+              <div className="px-12">
                 {error && (
-                    <div className="mb-8 p-4 bg-destructive/10 border border-destructive/20 rounded-xl backdrop-blur-sm">
+                    <div className="mb-8 p-4 bg-red-500/20 border border-red-400/50 rounded-xl backdrop-blur-sm">
                       <div className="flex items-center gap-3">
                         <svg
-                            className="w-5 h-5 text-destructive flex-shrink-0"
+                            className="w-5 h-5 text-red-400 flex-shrink-0"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -550,50 +547,47 @@ export default function HomePage() {
                               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <p className="text-destructive-foreground">{error}</p>
+                        <p className="text-red-200">{error}</p>
                       </div>
                     </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                  {/* Name field */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-foreground/90 tracking-wide">
-                      姓名 <span className="text-accent">*</span>
+                    <label className="block text-sm font-semibold text-white/90 tracking-wide">
+                      姓名 <span className="text-cyan-400">*</span>
                     </label>
-                    <div className="cosmic-input">
+                    <div>
                       <Input
                           value={formData.name}
                           onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground placeholder-muted-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all duration-300"
+                          className="h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white placeholder-white/50 text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
                           placeholder="请输入您的姓名"
                           required
                       />
                     </div>
                   </div>
 
-                  {/* Employee ID field */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-foreground/90 tracking-wide">
-                      工号 <span className="text-accent">*</span>
+                    <label className="block text-sm font-semibold text-white/90 tracking-wide">
+                      工号 <span className="text-cyan-400">*</span>
                     </label>
-                    <div className="cosmic-input">
+                    <div>
                       <Input
                           value={formData.employeeId}
                           onChange={(e) => setFormData((prev) => ({ ...prev, employeeId: e.target.value }))}
-                          className="h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300 px-4"
+                          className="h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 px-4"
                           placeholder="请输入您的工号"
                           required
                       />
                     </div>
                   </div>
 
-                  {/* Date picker field */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-foreground/90 tracking-wide">
-                      入职时间 <span className="text-accent">*</span>
+                    <label className="block text-sm font-semibold text-white/90 tracking-wide">
+                      入职时间 <span className="text-cyan-400">*</span>
                     </label>
-                    <div className="date-picker-cosmic cosmic-input">
+                    <div>
                       <div className="relative">
                         <input
                             type="date"
@@ -601,21 +595,21 @@ export default function HomePage() {
                             onChange={(e) => setFormData((prev) => ({ ...prev, workTime: e.target.value }))}
                             min="1998-05-12"
                             max="2025-09-05"
-                            className="w-full h-14 bg-input/50 backdrop-blur-sm border-2 border-border/50 rounded-xl text-foreground text-lg font-medium focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all duration-300 px-4"
+                            className="w-full h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 px-4"
                             required
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                             />
                           </svg>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                      <p className="text-xs text-white/60 mt-2 flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                               strokeLinecap="round"
@@ -630,16 +624,15 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Submit button */}
                 <div className="text-center">
                   <Button
                       onClick={handleFormSubmit}
                       disabled={isLoading}
-                      className="h-14 px-12 bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:via-accent/90 hover:to-primary/90 text-primary-foreground text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
+                      className="h-14 px-12 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
                   >
                     {isLoading ? (
                         <div className="flex items-center gap-3">
-                          <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                           生成中...
                         </div>
                     ) : (
@@ -657,8 +650,19 @@ export default function HomePage() {
                     )}
                   </Button>
                 </div>
+
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-400/20 rounded-full mb-6 invisible">
+                  <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-4.674z"
+                    />
+                  </svg>
+                </div>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -706,28 +710,6 @@ export default function HomePage() {
                 className="w-full h-full object-contain opacity-80 text-shimmer"
             />
           </div>
-
-          {/*<div className="flex justify-center my-8">*/}
-          {/*  <div className="relative w-[900px] h-[450px] infinity-container">*/}
-          {/*    /!* Base infinity symbol - static, no breathing animation *!/*/}
-          {/*    */}
-
-          {/*    /!* Light traveling along the path - only this moves *!/*/}
-          {/*    <div className="absolute inset-0 infinity-path-light">*/}
-          {/*      <Image*/}
-          {/*          src="/images/infinity-symbol.png"*/}
-          {/*          alt="Infinity symbol light"*/}
-          {/*          width={900}*/}
-          {/*          height={450}*/}
-          {/*          className="w-full h-full object-contain"*/}
-          {/*      />*/}
-          {/*    </div>*/}
-          {/*  </div>*/}
-          {/*</div>*/}
-
-          {/*<div className="text-center text-white mt-16">*/}
-          {/*  {!error && <p className="text-lg opacity-80 text-shimmer">正在为您生成专属证书，请稍候...</p>}*/}
-          {/*</div>*/}
         </div>
       </div>
   )
@@ -749,17 +731,13 @@ export default function HomePage() {
         <div className="relative z-10 min-h-screen flex items-center justify-center py-8">
           <div className="max-w-6xl mx-4">
             <Card className="bg-white/10 backdrop-blur-sm border-white/30 p-8 rounded-3xl">
-              {/* Certificate display */}
               {certificateData && (
                   <div className="space-y-6">
-                    {/* Certificate display */}
                     <div className="flex justify-center">
                       <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
                     </div>
 
-                    {/* Controls */}
                     <div className="flex flex-col items-center space-y-4">
-                      {/* Front/Back toggle */}
                       <div className="flex space-x-4">
                         <Button
                             onClick={() => setShowCertificateBack(false)}
@@ -777,7 +755,6 @@ export default function HomePage() {
                         </Button>
                       </div>
 
-                      {/* Download buttons */}
                       <div className="flex space-x-4">
                         <Button
                             onClick={downloadCertificateAsPDF}
@@ -788,7 +765,6 @@ export default function HomePage() {
                         </Button>
                       </div>
 
-                      {/* Certificate info */}
                       <div className="text-center text-white/80 text-sm space-y-1">
                         <p>证书编号: {certificateData.fullNo}</p>
                         <p>生成时间: {new Date().toLocaleString("zh-CN")}</p>
