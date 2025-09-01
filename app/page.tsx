@@ -346,13 +346,26 @@ export default function HomePage() {
           <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-end pr-24 right-15">
-          <div className="text-right text-white max-w-lg">
-            <h1 className="text-6xl font-bold mb-6 text-balance">探索宇宙的钥匙</h1>
-            <p className="text-2xl mb-8 opacity-90 leading-relaxed">回答几个问题，解锁属于你的星际祝福</p>
+        <div className="absolute top-1/2 right-32 transform -translate-y-1/2 z-20 pointer-events-none">
+          <Image
+              src="/images/topmid-line.png"
+              alt="Decorative line"
+              width={500}
+              height={10}
+              className="opacity-90 object-right scale-360 z-20 pointer-events-none"
+              style={{ transform: "translateX(-30%) translateY(-6.5%)" }}
+          />
+        </div>
+
+        <div className="relative z-10 min-h-screen flex items-center justify-end pr-32">
+          <div className="text-right text-white max-w-2xl">
+            <h1 className="text-7xl font-bold mb-8 text-balance leading-tight">探索宇宙的钥匙</h1>
+
+            <p className="text-3xl mb-12 opacity-90 leading-relaxed font-light">回答几个问题, 解锁属于你的星际祝福</p>
+
             <Button
                 onClick={() => setCurrentStep("quiz")}
-                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white px-8 py-3 text-lg rounded-full transition-all duration-300 transform hover:scale-105"
+                className="z-1000 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-8 py-6 text-xl font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               点击探秘
             </Button>
