@@ -1,0 +1,30 @@
+nvm use 18
+
+npm run build
+
+// 打包后会有.next文件, 上传至服务器
+
+# 进入你的前端项目根目录
+cd D:\webstorm\anniversary_frontend
+
+# 统一时间戳目录名
+$TS = Get-Date -Format "yyyyMMddHHmmss"
+$REL = "/srv/anniv-frontend/releases/anniv-$TS"
+
+# 1) 服务器上建目标目录
+ssh root@43.138.113.213 "mkdir -p $REL"
+
+# 2) 一次性上传所有必须文件/目录（-r 递归）
+scp -r ".next" "public" "package.json" "package-lock.json" "next.config.*" `
+    root@43.138.113.213:$REL/
+
+# 3) 切软链、装依赖、重启服务（服务器上执行）
+ssh root@43.138.113.213 `
+  "ln -sfn $REL /srv/anniv-frontend/current && chown -R app:app /srv/anniv-frontend && cd /srv/anniv-frontend/current && sudo -u app npm ci --omit=dev && sudo systemctl restart anniv-frontend && sudo systemctl status anniv-frontend --no-pager -l | sed -n '1,12p'"
+
+
+
+
+
+
+// 部署腾讯云 usr/local/out文件夹

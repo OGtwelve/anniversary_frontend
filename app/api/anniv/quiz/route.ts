@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const API_BASE_URL = process.env.ANNIV_API_BASE_URL || "http://localhost:8081/api"
+    const API_BASE_URL = process.env.NEXT_PUBLIC_ANNIV_API_BASE_URL ?? "/api";
 
     const response = await fetch(`${API_BASE_URL}/anniv/quiz`, {
       method: "GET",

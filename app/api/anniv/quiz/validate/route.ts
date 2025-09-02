@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Invalid request format" }, { status: 400 })
     }
 
-    const API_BASE_URL = process.env.ANNIV_API_BASE_URL || "http://localhost:8081/api"
+    const API_BASE_URL = process.env.NEXT_PUBLIC_ANNIV_API_BASE_URL ?? "/api";
 
     const response = await fetch(`${API_BASE_URL}/anniv/quiz/validate`, {
       method: "POST",

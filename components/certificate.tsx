@@ -21,7 +21,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
             ref={ref}
             className="relative w-[800px] h-[600px] bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden rounded-3xl"
         >
-            <div className="absolute inset-0 bg-[url('/images/background.jpg')] bg-cover bg-center opacity-80"></div>
+            <div className="absolute inset-0 bg-[url('/images/certificate-background.png')] bg-cover bg-center opacity-80"></div>
 
             {showBack ? (
                 // Certificate Back
@@ -54,7 +54,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
             ) : (
                 // Certificate Front
                 <div className="relative w-full h-full">
-                    <Image src="/images/certificate-front.png" alt="Certificate Front" fill className="object-cover" />
+                    <Image src="/images/certificate-front-fix2.png" alt="Certificate Front" fill className="object-cover" />
 
                     <div className="absolute bottom-13 right-9 text-right text-white">
                         {/* Certificate number with white background and work number on same line */}

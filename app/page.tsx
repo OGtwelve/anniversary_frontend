@@ -717,7 +717,7 @@ export default function HomePage() {
   const renderResultSection = () => (
       <div className="min-h-screen relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
+          <Image src="/images/certificate-background.png" alt="Space background" fill className="object-cover" />
         </div>
 
         <div className="absolute top-8 left-22 z-10">
@@ -759,7 +759,7 @@ export default function HomePage() {
                         <Button
                             onClick={downloadCertificateAsPDF}
                             disabled={isLoading}
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full disabled:opacity-50"
+                            className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-8 py-3 rounded-full disabled:opacity-50"
                         >
                           {isLoading ? "生成中..." : "下载PDF"}
                         </Button>
