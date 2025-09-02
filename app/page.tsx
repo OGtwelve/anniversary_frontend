@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import Certificate from "@/components/certificate"
-import {display} from "html2canvas/dist/types/css/property-descriptors/display";
 
 interface QuizOption {
   id: number
@@ -37,17 +36,19 @@ interface CertificateData {
 }
 
 export default function HomePage() {
-  const [currentStep, setCurrentStep] = useState("hero") // hero, quiz, form, loading, result
+  const [currentStep, setCurrentStep] = useState("hero") // hero, quiz, wishes, form, loading, result
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [formData, setFormData] = useState({
     name: "",
     employeeId: "",
     workTime: "",
     constellation: "",
+    wishes: "",
   })
 
   const [quizData, setQuizData] = useState<QuizData | null>(null)
   const [selectedAnswers, setSelectedAnswers] = useState<{ questionId: number; optionId: number }[]>([])
+  const [textAnswers, setTextAnswers] = useState<{ questionId: number; answer: string }[]>([])
   const [passToken, setPassToken] = useState<string>("")
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -128,6 +129,7 @@ export default function HomePage() {
         name: formData.name,
         startDate: formData.workTime,
         workNo: formData.employeeId,
+        wishes: formData.wishes,
         passToken,
       })
 
@@ -140,6 +142,7 @@ export default function HomePage() {
           name: formData.name,
           startDate: formData.workTime,
           workNo: formData.employeeId,
+          wishes: formData.wishes,
           passToken: passToken,
         }),
       })
@@ -224,21 +227,46 @@ export default function HomePage() {
     }
   }
 
+  const handleTextAnswerChange = (questionId: number, answer: string) => {
+    setTextAnswers((prev) => {
+      const existingIndex = prev.findIndex((a) => a.questionId === questionId)
+      if (existingIndex >= 0) {
+        const updated = [...prev]
+        updated[existingIndex] = { questionId, answer }
+        return updated
+      } else {
+        return [...prev, { questionId, answer }]
+      }
+    })
+  }
+
   const handleNextQuestion = () => {
     if (!quizData) return
 
     const currentQuestion = quizData.questions[currentQuestionIndex]
     const hasAnswered = selectedAnswers.some((a) => a.questionId === currentQuestion.id)
+    const hasTextAnswer = textAnswers.some((a) => a.questionId === currentQuestion.id && a.answer.trim())
 
-    if (!hasAnswered) {
-      setError("请先选择一个答案")
-      return
+    const isTextInputQuestion =
+        currentQuestion.options.length === 0 ||
+        (currentQuestion.options.length === 1 && currentQuestion.options[0].content.includes("答案"))
+
+    if (isTextInputQuestion) {
+      if (!hasTextAnswer) {
+        setError("请输入答案")
+        return
+      }
+    } else {
+      if (!hasAnswered) {
+        setError("请先选择一个答案")
+        return
+      }
     }
 
     setError("")
 
     if (currentQuestionIndex === quizData.questions.length - 1) {
-      validateQuizAnswers()
+      setCurrentStep("wishes")
     } else {
       setCurrentQuestionIndex((prev) => prev + 1)
     }
@@ -273,7 +301,7 @@ export default function HomePage() {
 
       const dataUrl = await domtoimage.toPng(certificateRef.current, {
         quality: 1.0,
-        width: 800, // Match certificate component width
+        width: 775, // Match certificate component width
         height: 600, // Match certificate component height
         bgcolor: "transparent", // Transparent background to avoid capturing extra elements
         style: {
@@ -283,7 +311,6 @@ export default function HomePage() {
           padding: "0",
         },
         filter: (node: Node) => {
-          // Skip script and style tags - check if node is Element before accessing tagName
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element
             return element.tagName !== "SCRIPT" && element.tagName !== "STYLE"
@@ -432,30 +459,63 @@ export default function HomePage() {
                       {quizData.questions[currentQuestionIndex].content}
                     </h2>
 
-                    <div className="space-y-4 mb-10">
-                      {quizData.questions[currentQuestionIndex].options.map((option) => {
-                        const currentQuestion = quizData.questions[currentQuestionIndex]
-                        const isSelected = selectedAnswers.some(
-                            (a) => a.questionId === currentQuestion.id && a.optionId === option.id,
-                        )
+                    {quizData.questions[currentQuestionIndex].options.length === 0 ||
+                    (quizData.questions[currentQuestionIndex].options.length === 1 &&
+                        quizData.questions[currentQuestionIndex].options[0].content.includes("答案")) ? (
+                        // Text input question
+                        <div className="space-y-6 mb-10">
+                          <div className="relative">
+                            <Input
+                                value={
+                                    textAnswers.find((a) => a.questionId === quizData.questions[currentQuestionIndex].id)
+                                        ?.answer || ""
+                                }
+                                onChange={(e) =>
+                                    handleTextAnswerChange(quizData.questions[currentQuestionIndex].id, e.target.value)
+                                }
+                                className="w-full h-16 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white placeholder-white/50 text-xl font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 text-center"
+                                placeholder="请输入您的答案..."
+                                required
+                            />
+                          </div>
 
-                        return (
-                            <button
-                                key={option.id}
-                                onClick={() => handleOptionSelect(currentQuestion.id, option.id)}
-                                className={`w-full text-left p-5 rounded-xl transition-all duration-300 border-2 shadow-lg ${
-                                    isSelected
-                                        ? "bg-cyan-400/30 border-cyan-400 shadow-cyan-400/20"
-                                        : "bg-blue-900/40 hover:bg-blue-800/50 border-blue-400/40 hover:border-blue-400/70 hover:shadow-blue-400/20"
-                                }`}
-                            >
-                        <span className="text-lg font-medium">
-                          {String.fromCharCode(65 + option.idxNo - 1)}. {option.content}
-                        </span>
-                            </button>
-                        )
-                      })}
-                    </div>
+                          {/* Show answer if available */}
+                          {quizData.questions[currentQuestionIndex].options.length === 1 &&
+                              quizData.questions[currentQuestionIndex].options[0].content.includes("答案") && (
+                                  <div className="mt-6 p-4 bg-cyan-400/20 backdrop-blur-sm border border-cyan-400/50 rounded-xl">
+                                    <p className="text-cyan-200 text-lg font-medium">
+                                      {quizData.questions[currentQuestionIndex].options[0].content}
+                                    </p>
+                                  </div>
+                              )}
+                        </div>
+                    ) : (
+                        // Multiple choice questions
+                        <div className="space-y-4 mb-10">
+                          {quizData.questions[currentQuestionIndex].options.map((option) => {
+                            const currentQuestion = quizData.questions[currentQuestionIndex]
+                            const isSelected = selectedAnswers.some(
+                                (a) => a.questionId === currentQuestion.id && a.optionId === option.id,
+                            )
+
+                            return (
+                                <button
+                                    key={option.id}
+                                    onClick={() => handleOptionSelect(currentQuestion.id, option.id)}
+                                    className={`w-full text-left p-5 rounded-xl transition-all duration-300 border-2 shadow-lg ${
+                                        isSelected
+                                            ? "bg-cyan-400/30 border-cyan-400 shadow-cyan-400/20"
+                                            : "bg-blue-900/40 hover:bg-blue-800/50 border-blue-400/40 hover:border-blue-400/70 hover:shadow-blue-400/20"
+                                    }`}
+                                >
+                          <span className="text-lg font-medium">
+                            {String.fromCharCode(65 + option.idxNo - 1)}. {option.content}
+                          </span>
+                                </button>
+                            )
+                          })}
+                        </div>
+                    )}
 
                     <div className="flex justify-between items-center">
                       <Button
@@ -472,11 +532,7 @@ export default function HomePage() {
                           disabled={isLoading}
                           className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-10 py-3 rounded-full disabled:opacity-50 font-medium shadow-lg"
                       >
-                        {isLoading
-                            ? "验证中..."
-                            : currentQuestionIndex === quizData.questions.length - 1
-                                ? "完成答题"
-                                : "下一题"}
+                        {currentQuestionIndex === quizData.questions.length - 1 ? "完成答题" : "下一题"}
                       </Button>
                     </div>
 
@@ -489,9 +545,84 @@ export default function HomePage() {
               ) : (
                   <div>
                     <h2 className="text-2xl font-bold mb-8 text-balance">暂无问题</h2>
-                    <Button onClick={() => setCurrentStep("form")} className="bg-blue-500 hover:bg-blue-600">
+                    <Button onClick={() => setCurrentStep("wishes")} className="bg-blue-500 hover:bg-blue-600">
                       跳过
                     </Button>
+                  </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+  )
+
+  const renderWishesSection = () => (
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
+        </div>
+
+        <div className="absolute top-8 left-22 z-10">
+          <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
+        </div>
+
+        <div className="absolute top-2 right-15 z-10">
+          <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
+        </div>
+
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <div
+              className="bg-black/40 p-12 max-w-2xl mx-4 shadow-2xl relative"
+              style={{
+                backgroundImage: "url('/images/quiz-left-right.png')",
+                backgroundSize: "100% 100%",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+              }}
+          >
+            <div className="text-center text-white px-8">
+              <h2 className="text-3xl font-bold mb-10 text-balance leading-relaxed">
+                请写下室友对于未来的实验室或自己写下自己的祝福
+              </h2>
+
+              <div className="space-y-6 mb-10">
+              <textarea
+                  value={formData.wishes}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, wishes: e.target.value }))}
+                  className="w-full h-32 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white placeholder-white/50 text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 p-4 resize-none"
+                  placeholder="请写下您的祝福语..."
+                  required
+              />
+              </div>
+
+              <div className="flex justify-between items-center">
+                <Button
+                    onClick={() => setCurrentStep("quiz")}
+                    variant="outline"
+                    className="border-2 border-white/50 text-white hover:bg-white/10 px-8 py-3 rounded-full bg-transparent font-medium"
+                >
+                  返回
+                </Button>
+
+                <Button
+                    onClick={() => {
+                      if (!formData.wishes.trim()) {
+                        setError("请填写祝福语")
+                        return
+                      }
+                      setError("")
+                      validateQuizAnswers()
+                    }}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-10 py-3 rounded-full disabled:opacity-50 font-medium shadow-lg"
+                >
+                  {isLoading ? "验证中..." : "完成"}
+                </Button>
+              </div>
+
+              {error && (
+                  <div className="mt-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg">
+                    <p className="text-red-200 text-sm">{error}</p>
                   </div>
               )}
             </div>
@@ -604,7 +735,7 @@ export default function HomePage() {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                d="M8 7V3L4 14h7v7l9-11h-7z"
                             />
                           </svg>
                         </div>
@@ -642,7 +773,7 @@ export default function HomePage() {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6"
                             />
                           </svg>
                           点击生成
@@ -657,7 +788,7 @@ export default function HomePage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-4.674z"
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4915a1 1 0 00.95-.69l1.519-4.674z"
                     />
                   </svg>
                 </div>
@@ -788,6 +919,7 @@ export default function HomePage() {
       <main className="overflow-hidden">
         {currentStep === "hero" && renderHeroSection()}
         {currentStep === "quiz" && renderQuizSection()}
+        {currentStep === "wishes" && renderWishesSection()}
         {currentStep === "form" && renderFormSection()}
         {currentStep === "loading" && renderLoadingSection()}
         {currentStep === "result" && renderResultSection()}

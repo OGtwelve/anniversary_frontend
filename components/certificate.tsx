@@ -8,6 +8,7 @@ interface CertificateData {
     name: string
     startDate: string
     workNo: string
+    wishes?: string
 }
 
 interface CertificateProps {
@@ -19,7 +20,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
     return (
         <div
             ref={ref}
-            className="relative w-[800px] h-[600px] bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden rounded-3xl"
+            className="relative w-[775px] h-[600px] bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden rounded-3xl"
         >
             <div className="absolute inset-0 bg-[url('/images/certificate-background.png')] bg-cover bg-center opacity-80"></div>
 
@@ -30,7 +31,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
 
                     <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">
                         <div className="text-2xl font-medium leading-relaxed tracking-wide max-w-2xl">
-                            <div className="mb-4">*祝福语*</div>
+                            <div className="mb-4">{data.wishes || "愿你在浩瀚宇宙中找到属于自己的星辰大海"}</div>
                         </div>
                     </div>
 

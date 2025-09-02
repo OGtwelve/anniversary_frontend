@@ -5,21 +5,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log("[v0] Certificate issue request:", body)
 
-    const { name, startDate, workNo, passToken } = body
+    const { name, startDate, workNo, passToken, wishes } = body
 
     // Validate request format
     if (!name || !startDate || !workNo || !passToken) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 })
     }
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_ANNIV_API_BASE_URL ?? "/api";
+    const API_BASE_URL = process.env.NEXT_PUBLIC_ANNIV_API_BASE_URL ?? "/api"
 
     const response = await fetch(`${API_BASE_URL}/anniv/certificates/issue`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, startDate, workNo, passToken }),
+      body: JSON.stringify({ name, startDate, workNo, passToken, wishes }),
       signal: AbortSignal.timeout(15000), // 15 second timeout for certificate generation
     })
 
@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     const fallbackName = "测试用户"
     const fallbackStartDate = "2023-09-01"
     const fallbackWorkNo = "123456"
+    const fallbackWishes = "祝愿浙江实验室未来发展更加辉煌，科研成果丰硕！"
 
     const currentDate = new Date()
     const startDateObj = new Date(fallbackStartDate)
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
         name: fallbackName,
         startDate: fallbackStartDate,
         workNo: fallbackWorkNo,
+        wishes: fallbackWishes,
       },
     }
 
