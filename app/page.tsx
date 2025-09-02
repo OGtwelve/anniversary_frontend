@@ -677,7 +677,7 @@ export default function HomePage() {
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
           <div className="w-full max-w-5xl">
             <div
-                className="relative p-16 shadow-2xl rounded-3xl overflow-hidden"
+                className="relative p-16 overflow-hidden"
                 style={{
                   backgroundImage: "url('/images/form-data-style.png')",
                   backgroundSize: "150% 150%",
@@ -788,7 +788,7 @@ export default function HomePage() {
                   <Button
                       onClick={handleFormSubmit}
                       disabled={isLoading}
-                      className="h-14 px-12 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
+                      className="h-14 px-12 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600  text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
                   >
                     {isLoading ? (
                         <div className="flex items-center gap-3">
