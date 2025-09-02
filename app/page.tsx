@@ -11,6 +11,7 @@ interface QuizOption {
   id: number
   idxNo: number
   content: string
+  ifCorrect?: boolean
 }
 
 interface QuizQuestion {
@@ -56,6 +57,8 @@ export default function HomePage() {
 
   const certificateRef = useRef<HTMLDivElement>(null)
   const [showCertificateBack, setShowCertificateBack] = useState(false)
+  const [showIncorrectPopup, setShowIncorrectPopup] = useState(false)
+  const [correctAnswer, setCorrectAnswer] = useState("")
 
   const fetchQuizData = async () => {
     try {
@@ -264,6 +267,32 @@ export default function HomePage() {
     }
 
     setError("")
+
+    if (!isTextInputQuestion && hasAnswered) {
+      const selectedAnswer = selectedAnswers.find((a) => a.questionId === currentQuestion.id)
+      if (selectedAnswer) {
+        const selectedOption = currentQuestion.options.find((opt) => opt.id === selectedAnswer.optionId)
+        if (selectedOption && "ifCorrect" in selectedOption && !selectedOption.ifCorrect) {
+          const correctOption = currentQuestion.options.find((opt) => "ifCorrect" in opt && opt.ifCorrect)
+          if (correctOption) {
+            // Progress to next step first
+            if (currentQuestionIndex === quizData.questions.length - 1) {
+              setCurrentStep("wishes")
+            } else {
+              setCurrentQuestionIndex((prev) => prev + 1)
+            }
+
+            // Then show popup with ABCD option and content
+            setTimeout(() => {
+              const correctOptionLetter = String.fromCharCode(65 + correctOption.idxNo - 1)
+              setCorrectAnswer(`${correctOptionLetter}. ${correctOption.content}`)
+              setShowIncorrectPopup(true)
+            }, 300)
+            return
+          }
+        }
+      }
+    }
 
     if (currentQuestionIndex === quizData.questions.length - 1) {
       setCurrentStep("wishes")
@@ -622,7 +651,7 @@ export default function HomePage() {
 
               {error && (
                   <div className="mt-6 p-4 bg-red-500/20 border border-red-400/50 rounded-lg">
-                    <p className="text-red-200 text-sm">{error}</p>
+                    <p className="text-red-200 text-center">{error}</p>
                   </div>
               )}
             </div>
@@ -815,10 +844,7 @@ export default function HomePage() {
 
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center">
           <div className="text-center text-white mb-70 px-4">
-            <h2
-                className="font-bold text-balance text-shimmer
-                 text-[clamp(1.125rem,calc(0.75rem+2.5vw),2.5rem)]"
-            >
+            <h2 className="font-bold text-balance text-shimmer text-[clamp(1.125rem,calc(0.75rem+2.5vw),2.5rem)]">
               您的专属宇宙证书正在生成........
             </h2>
           </div>
@@ -923,6 +949,39 @@ export default function HomePage() {
         {currentStep === "form" && renderFormSection()}
         {currentStep === "loading" && renderLoadingSection()}
         {currentStep === "result" && renderResultSection()}
+
+        {showIncorrectPopup && (
+            <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+                onClick={() => setShowIncorrectPopup(false)}
+            >
+              <div
+                  className="bg-gradient-to-br from-blue-900/90 to-cyan-900/90 backdrop-blur-md border border-cyan-400/50 rounded-2xl p-8 max-w-md mx-4 shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+              >
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-cyan-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">答案提示</h3>
+                  <p className="text-cyan-200 mb-6 leading-relaxed">正确答案是：{correctAnswer}</p>
+                  <Button
+                      onClick={() => setShowIncorrectPopup(false)}
+                      className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white px-6 py-2 rounded-full font-medium"
+                  >
+                    知道了
+                  </Button>
+                </div>
+              </div>
+            </div>
+        )}
       </main>
   )
 }
