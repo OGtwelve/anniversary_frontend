@@ -28,3 +28,29 @@ ssh root@43.138.113.213 `
 
 
 // 部署腾讯云 usr/local/out文件夹
+
+
+
+
+
+
+
+
+# 在你的前端项目根目录执行
+npm ci
+$env:NODE_ENV="production"
+npm run build
+
+$TS=(Get-Date -Format "yyyyMMddHHmmss")
+$PKG="anniv-frontend-$TS.tgz"
+# 仅打包运行所需的最小集
+tar -czf $PKG `
+  .next/standalone `
+  .next/static `
+  public `
+  package.json `
+  next.config.* `
+  .env.production
+
+# 上传到服务器（只开了22端口没关系，SCP走22）
+scp $PKG zjlab@10.101.88.143:/tmp/
