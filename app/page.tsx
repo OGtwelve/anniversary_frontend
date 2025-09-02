@@ -858,13 +858,13 @@ export default function HomePage() {
               </div>
           )}
 
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 infinity-container">
             <Image
                 src="/images/infinity-symbol.png"
                 alt="Infinity symbol"
                 width={900}
                 height={450}
-                className="w-full h-full object-contain opacity-80 text-shimmer"
+                className="w-full h-full object-contain opacity-80 infinity-symbol-large"
             />
           </div>
         </div>
