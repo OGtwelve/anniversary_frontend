@@ -138,9 +138,7 @@ export default function HomePage() {
 
       const response = await fetch("/api/anniv/certificates/issue", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
           startDate: formData.workTime,
@@ -150,8 +148,10 @@ export default function HomePage() {
         }),
       })
 
+      // 更友好的错误提示（尝试解析后端的 message）
       if (!response.ok) {
-        setError(`Certificate API request failed with status: ${response.status}`)
+        const errJson = await response.json().catch(() => null)
+        setError(errJson?.message || `证书接口请求失败, 状态码: ${response.status}`)
         return
       }
 
@@ -159,10 +159,16 @@ export default function HomePage() {
 
       if ((result.message === "恭喜成功" || result.message === "ok" || result.message === "保存成功") && result.data) {
         setCertificateData(result.data)
-        console.log("[v0] Certificate generated successfully:", result.data)
-        setCurrentStep("result")
+
+        // ✅ 只有“得到通过”（后端成功）才进入 loading
+        setCurrentStep("loading")
+
+        // 可选：给 loading 一点展示时间后跳到结果页
+        setTimeout(() => {
+          setCurrentStep("result")
+        }, 1000)
       } else {
-        setError(result.message || "Certificate generation failed")
+        setError(result.message || "证书生成失败")
       }
     } catch (err) {
       console.error("[v0] Certificate generation error:", err)
@@ -204,7 +210,7 @@ export default function HomePage() {
     }
 
     setError("")
-    setCurrentStep("loading")
+    generateCertificate()
   }
 
   const handleOptionSelect = (questionId: number, optionId: number) => {
@@ -406,15 +412,15 @@ export default function HomePage() {
     }
   }
 
-  useEffect(() => {
-    if (currentStep === "loading" && !certificateData && passToken) {
-      const timer = setTimeout(() => {
-        generateCertificate()
-      }, 2000)
-
-      return () => clearTimeout(timer)
-    }
-  }, [currentStep, certificateData, passToken])
+  // useEffect(() => {
+  //   if (currentStep === "loading" && !certificateData && passToken) {
+  //     const timer = setTimeout(() => {
+  //       generateCertificate()
+  //     }, 2000)
+  //
+  //     return () => clearTimeout(timer)
+  //   }
+  // }, [currentStep, certificateData, passToken])
 
   useEffect(() => {
     if (currentStep === "quiz" && !quizData) {
