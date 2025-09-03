@@ -28,7 +28,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
             {showBack ? (
                 // Certificate Back
                 <div className="relative w-full h-full">
-                    <Image src="/images/certificate-back.png" alt="Certificate Back" fill className="object-cover" />
+                    <Image src="/images/certificate-back-fix2.png" alt="Certificate Back" fill className="object-cover" />
 
                     {/*<div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">*/}
                     {/*    <div className="text-2xl font-medium leading-relaxed tracking-wide">*/}

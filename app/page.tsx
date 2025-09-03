@@ -318,21 +318,24 @@ export default function HomePage() {
     try {
       setIsLoading(true)
       setError("")
-      console.log("[v0] Starting PDF generation with dom-to-image...")
+      console.log("[v0] Starting PDF generation with both front and back...")
 
       const domtoimage = (await import("dom-to-image")).default
       const jsPDF = (await import("jspdf")).default
 
-      console.log("[v0] Libraries loaded, capturing with dom-to-image...")
+      console.log("[v0] Libraries loaded, capturing both sides...")
 
       // Wait for images to load
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      const dataUrl = await domtoimage.toPng(certificateRef.current, {
+      setShowCertificateBack(false)
+      await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for state update
+
+      const frontDataUrl = await domtoimage.toPng(certificateRef.current, {
         quality: 1.0,
-        width: 775, // Match certificate component width
-        height: 600, // Match certificate component height
-        bgcolor: "transparent", // Transparent background to avoid capturing extra elements
+        width: 775,
+        height: 600,
+        bgcolor: "transparent",
         style: {
           transform: "scale(1)",
           transformOrigin: "top left",
@@ -348,23 +351,53 @@ export default function HomePage() {
         },
       })
 
-      console.log("[v0] Image data generated with dom-to-image")
+      console.log("[v0] Front side captured")
+
+      setShowCertificateBack(true)
+      await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for state update
+
+      const backDataUrl = await domtoimage.toPng(certificateRef.current, {
+        quality: 1.0,
+        width: 775,
+        height: 600,
+        bgcolor: "transparent",
+        style: {
+          transform: "scale(1)",
+          transformOrigin: "top left",
+          margin: "0",
+          padding: "0",
+        },
+        filter: (node: Node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element
+            return element.tagName !== "SCRIPT" && element.tagName !== "STYLE"
+          }
+          return true
+        },
+      })
+
+      console.log("[v0] Back side captured")
 
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "mm",
-        format: [210, 148], // Custom format to match certificate aspect ratio (4:3)
+        format: [210, 148],
       })
 
-      const imgWidth = 210 // Custom width in mm
-      const imgHeight = 148 // Custom height in mm (maintains 4:3 ratio)
+      const imgWidth = 210
+      const imgHeight = 148
 
-      pdf.addImage(dataUrl, "PNG", 0, 0, imgWidth, imgHeight)
+      // Add front page
+      pdf.addImage(frontDataUrl, "PNG", 0, 0, imgWidth, imgHeight)
 
-      const fileName = `${certificateData.name}-宇宙证书-${showCertificateBack ? "背面" : "正面"}.pdf`
+      // Add back page
+      pdf.addPage()
+      pdf.addImage(backDataUrl, "PNG", 0, 0, imgWidth, imgHeight)
+
+      const fileName = `${certificateData.name}-宇宙证书-完整版.pdf`
       pdf.save(fileName)
 
-      console.log("[v0] PDF download completed successfully:", fileName)
+      console.log("[v0] PDF download completed successfully with both sides:", fileName)
     } catch (error) {
       console.error("[v0] PDF generation failed:", error)
       setError(`PDF生成失败: ${error instanceof Error ? error.message : "未知错误"}`)
