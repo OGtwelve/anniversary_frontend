@@ -333,11 +333,11 @@ export default function HomePage() {
 
       const frontDataUrl = await domtoimage.toPng(certificateRef.current, {
         quality: 1.0,
-        width: 775,
-        height: 600,
+        width: 2325,
+        height: 1800,
         bgcolor: "transparent",
         style: {
-          transform: "scale(1)",
+          transform: "scale(3)",
           transformOrigin: "top left",
           margin: "0",
           padding: "0",
@@ -358,11 +358,11 @@ export default function HomePage() {
 
       const backDataUrl = await domtoimage.toPng(certificateRef.current, {
         quality: 1.0,
-        width: 775,
-        height: 600,
+        width: 2325,
+        height: 1800,
         bgcolor: "transparent",
         style: {
-          transform: "scale(1)",
+          transform: "scale(3)",
           transformOrigin: "top left",
           margin: "0",
           padding: "0",
