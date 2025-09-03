@@ -314,6 +314,24 @@ export default function HomePage() {
     }
   }
 
+  // 计算导出参数：根据小屏/大屏与 DPR 自动决定宽高与缩放
+  function getExportParams(node: HTMLElement) {
+    const rect = node.getBoundingClientRect()
+    // 判定小屏（你也可以换成 768、1024 等断点）
+    const isSmall = window.matchMedia("(max-width: 640px)").matches
+    const dpr = Math.min(window.devicePixelRatio || 1, 2) // 限制上限，防止内存炸裂
+
+    // 小屏降低一点缩放倍数，减少内存占用
+    const baseScale = isSmall ? 2 : 3
+    const scale = baseScale * dpr
+
+    const exportWidth = Math.round(rect.width * scale)
+    const exportHeight = Math.round(rect.height * scale)
+
+    return { exportWidth, exportHeight, scale }
+  }
+
+
   const downloadCertificateAsPDF = async () => {
     if (!certificateRef.current || !certificateData) {
       console.error("[v0] Missing certificate ref or data")
@@ -324,86 +342,85 @@ export default function HomePage() {
     try {
       setIsLoading(true)
       setError("")
-      console.log("[v0] Starting PDF generation with both front and back...")
-
       const domtoimage = (await import("dom-to-image")).default
       const jsPDF = (await import("jspdf")).default
 
-      console.log("[v0] Libraries loaded, capturing both sides...")
+      // —— 前面保持不变 —— //
+      // 建议用 RAF 等待一帧，状态切换后更稳
+      const nextPaint = () =>
+          new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-      // Wait for images to load
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
+      // ====== 导出正面 ======
       setShowCertificateBack(false)
-      await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for state update
+      await nextPaint()
 
-      const frontDataUrl = await domtoimage.toPng(certificateRef.current, {
-        quality: 1.0,
-        width: 2325,
-        height: 1800,
-        bgcolor: "transparent",
-        style: {
-          transform: "scale(3)",
-          transformOrigin: "top left",
-          margin: "0",
-          padding: "0",
-        },
-        filter: (node: Node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element
-            return element.tagName !== "SCRIPT" && element.tagName !== "STYLE"
-          }
-          return true
-        },
-      })
+      {
+        const node = certificateRef.current!
+        const { exportWidth, exportHeight, scale } = getExportParams(node)
 
-      console.log("[v0] Front side captured")
+        var frontDataUrl = await domtoimage.toPng(node, {
+          quality: 1.0,
+          width: exportWidth,
+          height: exportHeight,
+          bgcolor: "transparent",
+          style: {
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            margin: "0",
+            padding: "0",
+            // 确保图片资源尺寸不受 CSS 限制
+            width: `${node.getBoundingClientRect().width}px`,
+            height: `${node.getBoundingClientRect().height}px`,
+          },
+          filter: (n: Node) => {
+            if (n.nodeType === Node.ELEMENT_NODE) {
+              const el = n as Element
+              return el.tagName !== "SCRIPT" && el.tagName !== "STYLE"
+            }
+            return true
+          },
+        })
+      }
 
+      // ====== 导出背面 ======
       setShowCertificateBack(true)
-      await new Promise((resolve) => setTimeout(resolve, 500)) // Wait for state update
+      await nextPaint()
 
-      const backDataUrl = await domtoimage.toPng(certificateRef.current, {
-        quality: 1.0,
-        width: 2325,
-        height: 1800,
-        bgcolor: "transparent",
-        style: {
-          transform: "scale(3)",
-          transformOrigin: "top left",
-          margin: "0",
-          padding: "0",
-        },
-        filter: (node: Node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element
-            return element.tagName !== "SCRIPT" && element.tagName !== "STYLE"
-          }
-          return true
-        },
-      })
+      {
+        const node = certificateRef.current!
+        const { exportWidth, exportHeight, scale } = getExportParams(node)
 
-      console.log("[v0] Back side captured")
+        var backDataUrl = await domtoimage.toPng(node, {
+          quality: 1.0,
+          width: exportWidth,
+          height: exportHeight,
+          bgcolor: "transparent",
+          style: {
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            margin: "0",
+            padding: "0",
+            width: `${node.getBoundingClientRect().width}px`,
+            height: `${node.getBoundingClientRect().height}px`,
+          },
+          filter: (n: Node) => {
+            if (n.nodeType === Node.ELEMENT_NODE) {
+              const el = n as Element
+              return el.tagName !== "SCRIPT" && el.tagName !== "STYLE"
+            }
+            return true
+          },
+        })
+      }
 
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: [210, 148],
-      })
-
+      // ====== 生成 PDF（保持不变）======
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [210, 148] })
       const imgWidth = 210
       const imgHeight = 148
-
-      // Add front page
       pdf.addImage(frontDataUrl, "PNG", 0, 0, imgWidth, imgHeight)
-
-      // Add back page
       pdf.addPage()
       pdf.addImage(backDataUrl, "PNG", 0, 0, imgWidth, imgHeight)
-
-      const fileName = `${certificateData.name}-宇宙证书-完整版.pdf`
-      pdf.save(fileName)
-
-      console.log("[v0] PDF download completed successfully with both sides:", fileName)
+      pdf.save(`${certificateData.name}-宇宙证书-完整版.pdf`)
     } catch (error) {
       console.error("[v0] PDF generation failed:", error)
       setError(`PDF生成失败: ${error instanceof Error ? error.message : "未知错误"}`)
@@ -775,7 +792,7 @@ export default function HomePage() {
                 }}
             >
               <div className="text-center mb-8 md:mb-12">
-                <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white text-balance">点亮你的专属星图</h2>
+                <h2 className="text-2xl md:text-4xl font-bold text-white text-balance mt-5">点亮你的专属星图</h2>
                 <p className="text-base md:text-lg text-white/80 leading-relaxed">填写以下信息，完成你的宇宙档案</p>
               </div>
 
@@ -877,7 +894,7 @@ export default function HomePage() {
                   <Button
                       onClick={handleFormSubmit}
                       disabled={isLoading}
-                      className="h-12 md:h-14 px-8 md:px-12 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600  text-white text-base md:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
+                      className="mb-2 h-12 md:h-14 px-8 md:px-12 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600  text-white text-base md:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
                   >
                     {isLoading ? (
                         <div className="flex items-center gap-3">
