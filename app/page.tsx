@@ -1034,6 +1034,7 @@ export default function HomePage() {
                       <div className="text-center text-white/80 text-xs md:text-sm space-y-1">
                         <p>证书编号: {certificateData.fullNo}</p>
                         <p>生成时间: {new Date().toLocaleString("zh-CN")}</p>
+                        <p className="block md:hidden">注: 手机查看效果为临时, 实际请以PDF为准</p>
                       </div>
                     </div>
                   </div>

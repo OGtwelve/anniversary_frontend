@@ -21,7 +21,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
     return (
         <div
             ref={ref}
-            className="relative w-full max-w-[775px] h-auto aspect-[775/600] bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden rounded-3xl mx-auto"
+            className="relative w-full max-w-[775px] h-auto aspect-[775/600] bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden md:rounded-3xl mx-auto"
         >
             <div className="absolute inset-0 bg-[url('/images/certificate-background.png')] bg-cover bg-center opacity-80"></div>
 
