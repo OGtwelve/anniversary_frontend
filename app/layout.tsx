@@ -17,24 +17,24 @@ export const metadata: Metadata = {
   title: "之江实验室-8周年活动网站",
   description: "之江实验室宇宙主题互动体验",
   keywords: "浙江实验室,之江实验室",
-  icons:{
+  icons: {
     icon: "/images/favicon.ico",
     shortcut: "/images/favicon.ico",
     apple: "/images/favicon.ico",
-  }
+  },
 }
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh-CN">
+      <html lang="zh-CN">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${notoSansSC.variable}`}>
         <Suspense fallback={null}>{children}</Suspense>
         <Analytics />
       </body>
-    </html>
+      </html>
   )
 }

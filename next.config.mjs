@@ -9,7 +9,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  output: 'export'
+  // 部署放开
+  // output: 'export'
 }
 
 export default nextConfig

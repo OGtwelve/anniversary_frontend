@@ -1,5 +1,6 @@
 import { forwardRef } from "react"
 import Image from "next/image"
+import { wishesFont } from "@/app/fonts/wishes";
 
 interface CertificateData {
     fullNo: string
@@ -29,11 +30,21 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
                 <div className="relative w-full h-full">
                     <Image src="/images/certificate-back.png" alt="Certificate Back" fill className="object-cover" />
 
-                    <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">
-                        <div className="text-2xl font-medium leading-relaxed tracking-wide max-w-2xl">
-                            <div className="mb-4">{data.wishes || "愿你在浩瀚宇宙中找到属于自己的星辰大海"}</div>
+                    {/*<div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">*/}
+                    {/*    <div className="text-2xl font-medium leading-relaxed tracking-wide">*/}
+                    {/*        <div className={`${wishesFont.className}`}>{data.wishes || "愿你在浩瀚宇宙中找到属于自己的星辰大海"}</div>*/}
+                    {/*    </div>*/}
+                    {/*</div>*/}
+                    <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white">
+                        <div className="mx-auto max-w-[900px] px-6">
+                            <p
+                                className={`${wishesFont.className} wishes-text wishes-glow text-[30px] md:text-[35px] font-normal`}
+                            >
+                                {data.wishes || "愿你在浩瀚宇宙中找到属于自己的星辰大海"}
+                            </p>
                         </div>
                     </div>
+
 
                     <div className="absolute bottom-13 right-9 text-right text-white">
                         {/* Certificate number with white background and work number on same line */}

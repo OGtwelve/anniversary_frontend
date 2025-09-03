@@ -124,6 +124,35 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-noto-sans-sc), var(--font-sans), sans-serif;
+    /* Added content protection CSS to prevent selection and dragging */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent image dragging and selection */
+  img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+
+  /* Allow interaction with buttons and inputs while maintaining protection */
+  button,
+  input,
+  textarea,
+  select {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    pointer-events: auto;
   }
 }
 
@@ -262,4 +291,29 @@
       opacity: 0.7;
     }
   }
+}
+
+/* 不随意在中文间断行 + 合适的行距/字距 */
+.wishes-text {
+  word-break: keep-all;         /* 中文整词/整句换行 */
+  white-space: normal;
+  line-height: 1.8;             /* 行距 */
+  letter-spacing: 0.06em;       /* 字距 */
+}
+
+/* 柔和发光 */
+.wishes-glow {
+  text-shadow:
+          0 0 4px  rgba(255,255,255,.85),
+          0 0 10px rgba(125,211,252,.75),  /* sky-300 */
+          0 0 18px rgba(56,189,248,.55);   /* sky-400 */
+}
+
+/* 更强一点的发光（可选） */
+.wishes-glow-strong {
+  text-shadow:
+          0 0 3px  rgba(255,255,255,.9),
+          0 0 8px  rgba(125,211,252,.9),
+          0 0 18px rgba(56,189,248,.7),
+          0 0 36px rgba(14,165,233,.5);    /* sky-500 */
 }
