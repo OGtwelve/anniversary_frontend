@@ -997,8 +997,10 @@ export default function HomePage() {
             <Card className="bg-white/10 backdrop-blur-sm border-white/30 p-4 md:p-8 rounded-3xl">
               {certificateData && (
                   <div className="space-y-4 md:space-y-6">
-                    <div className="flex justify-center overflow-x-auto">
-                      <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
+                    <div className="flex justify-center w-full">
+                      <div className="w-full max-w-[775px] px-2 md:px-0">
+                        <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
+                      </div>
                     </div>
 
                     <div className="flex flex-col items-center space-y-4">
