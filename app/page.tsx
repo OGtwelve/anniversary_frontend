@@ -939,7 +939,7 @@ export default function HomePage() {
 
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center">
           <div className="text-center text-white mb-70 px-4">
-            <h2 className="font-bold text-balance text-shimmer text-[clamp(1rem,calc(0.5rem+2.5vw),2.5rem)]">
+            <h2 className="font-bold text-balance text-shimmer text-[clamp(1.125rem,calc(0.75rem+2.5vw),2.5rem)]">
               您的专属宇宙证书正在生成........
             </h2>
           </div>
@@ -957,9 +957,9 @@ export default function HomePage() {
             <Image
                 src="/images/infinity-symbol.png"
                 alt="Infinity symbol"
-                width={600}
-                height={300}
-                className="w-full h-full object-contain opacity-80 infinity-symbol-large md:w-[900px] md:h-[450px]"
+                width={900}
+                height={450}
+                className="w-full h-full object-contain opacity-80 infinity-symbol-large"
             />
           </div>
         </div>
