@@ -28,7 +28,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
             {showBack ? (
                 // Certificate Back
                 <div className="relative w-full h-full">
-                    <Image src="/images/certificate-back-fix2.png" alt="Certificate Back" fill className="object-cover" />
+                    <Image src="/images/certificate-back-fix3.png" alt="Certificate Back" fill className="object-cover" />
 
                     {/*<div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">*/}
                     {/*    <div className="text-2xl font-medium leading-relaxed tracking-wide">*/}
@@ -38,7 +38,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data, showBa
                     <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white">
                         <div className="mx-auto max-w-[900px] px-6">
                             <p
-                                className={`${wishesFont.className} wishes-text wishes-glow text-[30px] md:text-[35px] font-normal`}
+                                className={`${wishesFont.className} wishes-text wishes-glow-strong text-[30px] md:text-[35px] font-normal`}
                             >
                                 {data.wishes || "愿你在浩瀚宇宙中找到属于自己的星辰大海"}
                             </p>

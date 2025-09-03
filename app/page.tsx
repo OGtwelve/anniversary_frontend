@@ -428,15 +428,27 @@ export default function HomePage() {
           <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" priority />
         </div>
 
-        <div className="absolute top-8 left-22 z-10">
-          <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
+        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+          <Image
+              src="/images/topleft-logo.png"
+              alt="Left logo"
+              width={125}
+              height={125}
+              className="md:w-[180px] md:h-[100px]"
+          />
         </div>
 
-        <div className="absolute top-2 right-15 z-10">
-          <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
+        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+          <Image
+              src="/images/topright-logo.png"
+              alt="Zhejiang Lab"
+              width={200}
+              height={200}
+              className="md:w-[280px] md:h-[150px]"
+          />
         </div>
 
-        <div className="absolute top-1/2 right-32 transform -translate-y-1/2 z-10 pointer-events-none">
+        <div className="hidden md:block absolute top-1/2 right-32 transform -translate-y-1/2 z-10 pointer-events-none">
           <Image
               src="/images/topmid-line.png"
               alt="Decorative line"
@@ -447,15 +459,17 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-end pr-32">
-          <div className="text-right text-white max-w-2xl">
-            <h1 className="text-7xl font-bold mb-8 text-balance leading-tight">探索宇宙的钥匙</h1>
+        <div className="relative z-10 min-h-screen flex items-center justify-center md:justify-end px-4 md:pr-32">
+          <div className="text-center md:text-right text-white max-w-2xl">
+            <h1 className="text-4xl md:text-7xl font-bold mb-6 md:mb-8 text-balance leading-tight">探索宇宙的钥匙</h1>
 
-            <p className="text-3xl mb-12 opacity-90 leading-relaxed font-light">回答几个问题, 解锁属于你的星际祝福</p>
+            <p className="text-lg md:text-3xl mb-8 md:mb-12 opacity-90 leading-relaxed font-light">
+              回答几个问题, 解锁属于你的星际祝福
+            </p>
 
             <Button
                 onClick={() => setCurrentStep("quiz")}
-                className="z-1000 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-8 py-6 text-xl font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                className="z-1000 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-6 md:px-8 py-4 md:py-6 text-lg md:text-xl font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               点击探秘
             </Button>
@@ -470,17 +484,29 @@ export default function HomePage() {
           <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-8 left-22 z-10">
-          <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
+        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+          <Image
+              src="/images/topleft-logo.png"
+              alt="Left logo"
+              width={125}
+              height={125}
+              className="md:w-[180px] md:h-[100px]"
+          />
         </div>
 
-        <div className="absolute top-2 right-15 z-10">
-          <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
+        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+          <Image
+              src="/images/topright-logo.png"
+              alt="Zhejiang Lab"
+              width={200}
+              height={200}
+              className="md:w-[280px] md:h-[150px]"
+          />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
           <div
-              className="bg-black/40 p-12 max-w-2xl mx-4 shadow-2xl relative"
+              className="bg-black/40 p-6 md:p-12 max-w-2xl w-full mx-4 shadow-2xl relative"
               style={{
                 backgroundImage: "url('/images/quiz-left-right.png')",
                 backgroundSize: "100% 100%",
@@ -488,15 +514,15 @@ export default function HomePage() {
                 backgroundPosition: "center",
               }}
           >
-            <div className="text-center text-white px-8">
+            <div className="text-center text-white px-4 md:px-8">
               {isLoading ? (
                   <div>
-                    <h2 className="text-2xl font-bold mb-8 text-balance">加载问题中...</h2>
+                    <h2 className="text-xl md:text-2xl font-bold mb-8 text-balance">加载问题中...</h2>
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
                   </div>
               ) : error ? (
                   <div>
-                    <h2 className="text-2xl font-bold mb-8 text-balance text-red-400">加载失败</h2>
+                    <h2 className="text-xl md:text-2xl font-bold mb-8 text-balance text-red-400">加载失败</h2>
                     <p className="mb-4">{error}</p>
                     <Button onClick={fetchQuizData} className="bg-red-500 hover:bg-red-600">
                       重试
@@ -504,7 +530,7 @@ export default function HomePage() {
                   </div>
               ) : quizData && quizData.questions.length > 0 ? (
                   <>
-                    <div className="mb-8">
+                    <div className="mb-6 md:mb-8">
                       <div className="flex justify-between text-sm opacity-70 mb-4">
                         <span>问题 {currentQuestionIndex + 1}</span>
                         <span>共 {quizData.questions.length} 题</span>
@@ -517,7 +543,7 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    <h2 className="text-3xl font-bold mb-10 text-balance leading-relaxed">
+                    <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 text-balance leading-relaxed">
                       {quizData.questions[currentQuestionIndex].content}
                     </h2>
 
@@ -624,17 +650,29 @@ export default function HomePage() {
           <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-8 left-22 z-10">
-          <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
+        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+          <Image
+              src="/images/topleft-logo.png"
+              alt="Left logo"
+              width={125}
+              height={125}
+              className="md:w-[180px] md:h-[100px]"
+          />
         </div>
 
-        <div className="absolute top-2 right-15 z-10">
-          <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
+        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+          <Image
+              src="/images/topright-logo.png"
+              alt="Zhejiang Lab"
+              width={200}
+              height={200}
+              className="md:w-[280px] md:h-[150px]"
+          />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
           <div
-              className="bg-black/40 p-12 max-w-2xl mx-4 shadow-2xl relative"
+              className="bg-black/40 p-6 md:p-12 max-w-2xl w-full mx-4 shadow-2xl relative"
               style={{
                 backgroundImage: "url('/images/quiz-left-right.png')",
                 backgroundSize: "100% 100%",
@@ -642,26 +680,26 @@ export default function HomePage() {
                 backgroundPosition: "center",
               }}
           >
-            <div className="text-center text-white px-8">
-              <h2 className="text-3xl font-bold mb-10 text-balance leading-relaxed">
+            <div className="text-center text-white px-4 md:px-8">
+              <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 text-balance leading-relaxed">
                 请写下室友对于未来的实验室或自己写下自己的祝福
               </h2>
 
-              <div className="space-y-6 mb-10">
+              <div className="space-y-6 mb-6 md:mb-10">
               <textarea
                   value={formData.wishes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, wishes: e.target.value }))}
-                  className="w-full h-32 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white placeholder-white/50 text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 p-4 resize-none"
+                  className="w-full h-32 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white placeholder-white/50 text-base md:text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 p-4 resize-none"
                   placeholder="请写下您的祝福语..."
                   required
               />
               </div>
 
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <Button
                     onClick={() => setCurrentStep("quiz")}
                     variant="outline"
-                    className="border-2 border-white/50 text-white hover:bg-white/10 px-8 py-3 rounded-full bg-transparent font-medium"
+                    className="border-2 border-white/50 text-white hover:bg-white/10 px-6 md:px-8 py-3 rounded-full bg-transparent font-medium w-full sm:w-auto"
                 >
                   返回
                 </Button>
@@ -676,7 +714,7 @@ export default function HomePage() {
                       validateQuizAnswers()
                     }}
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-10 py-3 rounded-full disabled:opacity-50 font-medium shadow-lg"
+                    className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-8 md:px-10 py-3 rounded-full disabled:opacity-50 font-medium shadow-lg w-full sm:w-auto"
                 >
                   {isLoading ? "验证中..." : "完成"}
                 </Button>
@@ -699,18 +737,30 @@ export default function HomePage() {
           <Image src="/images/form-background.png" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-8 left-22 z-10">
-          <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
+        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+          <Image
+              src="/images/topleft-logo.png"
+              alt="Left logo"
+              width={125}
+              height={125}
+              className="md:w-[180px] md:h-[100px]"
+          />
         </div>
 
-        <div className="absolute top-2 right-15 z-10">
-          <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
+        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+          <Image
+              src="/images/topright-logo.png"
+              alt="Zhejiang Lab"
+              width={200}
+              height={200}
+              className="md:w-[280px] md:h-[150px]"
+          />
         </div>
 
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
           <div className="w-full max-w-5xl">
             <div
-                className="relative p-16 overflow-hidden"
+                className="relative p-8 md:p-16 overflow-hidden"
                 style={{
                   backgroundImage: "url('/images/form-data-style.png')",
                   backgroundSize: "150% 150%",
@@ -718,14 +768,14 @@ export default function HomePage() {
                   backgroundPosition: "center",
                 }}
             >
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold mb-4 text-white text-balance">点亮你的专属星图</h2>
-                <p className="text-lg text-white/80 leading-relaxed">填写以下信息，完成你的宇宙档案</p>
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white text-balance">点亮你的专属星图</h2>
+                <p className="text-base md:text-lg text-white/80 leading-relaxed">填写以下信息，完成你的宇宙档案</p>
               </div>
 
-              <div className="px-12">
+              <div className="px-4 md:px-12">
                 {error && (
-                    <div className="mb-8 p-4 bg-red-500/20 border border-red-400/50 rounded-xl backdrop-blur-sm">
+                    <div className="mb-6 md:mb-8 p-4 bg-red-500/20 border border-red-400/50 rounded-xl backdrop-blur-sm">
                       <div className="flex items-center gap-3">
                         <svg
                             className="w-5 h-5 text-red-400 flex-shrink-0"
@@ -745,7 +795,7 @@ export default function HomePage() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-10">
                   <div className="space-y-3">
                     <label className="block text-sm font-semibold text-white/90 tracking-wide">
                       姓名 <span className="text-cyan-400">*</span>
@@ -754,7 +804,7 @@ export default function HomePage() {
                       <Input
                           value={formData.name}
                           onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                          className="h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white placeholder-white/50 text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
+                          className="h-12 md:h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white placeholder-white/50 text-base md:text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
                           placeholder="请输入您的姓名"
                           required
                       />
@@ -769,7 +819,7 @@ export default function HomePage() {
                       <Input
                           value={formData.employeeId}
                           onChange={(e) => setFormData((prev) => ({ ...prev, employeeId: e.target.value }))}
-                          className="h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 px-4"
+                          className="h-12 md:h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white text-base md:text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 px-4"
                           placeholder="请输入您的工号"
                           required
                       />
@@ -788,7 +838,7 @@ export default function HomePage() {
                             onChange={(e) => setFormData((prev) => ({ ...prev, workTime: e.target.value }))}
                             min="2017-09-06"
                             max="2025-09-05"
-                            className="w-full h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 px-4"
+                            className="w-full h-12 md:h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white text-base md:text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 px-4"
                             required
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -821,7 +871,7 @@ export default function HomePage() {
                   <Button
                       onClick={handleFormSubmit}
                       disabled={isLoading}
-                      className="h-14 px-12 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600  text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
+                      className="h-12 md:h-14 px-8 md:px-12 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600  text-white text-base md:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
                   >
                     {isLoading ? (
                         <div className="flex items-center gap-3">
@@ -867,17 +917,29 @@ export default function HomePage() {
           <Image src="/images/loading-background.png" alt="Loading background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-8 left-22 z-10">
-          <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
+        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+          <Image
+              src="/images/topleft-logo.png"
+              alt="Left logo"
+              width={125}
+              height={125}
+              className="md:w-[180px] md:h-[100px]"
+          />
         </div>
 
-        <div className="absolute top-2 right-15 z-10">
-          <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
+        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+          <Image
+              src="/images/topright-logo.png"
+              alt="Zhejiang Lab"
+              width={200}
+              height={200}
+              className="md:w-[280px] md:h-[150px]"
+          />
         </div>
 
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center">
           <div className="text-center text-white mb-70 px-4">
-            <h2 className="font-bold text-balance text-shimmer text-[clamp(1.125rem,calc(0.75rem+2.5vw),2.5rem)]">
+            <h2 className="font-bold text-balance text-shimmer text-[clamp(1rem,calc(0.5rem+2.5vw),2.5rem)]">
               您的专属宇宙证书正在生成........
             </h2>
           </div>
@@ -895,9 +957,9 @@ export default function HomePage() {
             <Image
                 src="/images/infinity-symbol.png"
                 alt="Infinity symbol"
-                width={900}
-                height={450}
-                className="w-full h-full object-contain opacity-80 infinity-symbol-large"
+                width={600}
+                height={300}
+                className="w-full h-full object-contain opacity-80 infinity-symbol-large md:w-[900px] md:h-[450px]"
             />
           </div>
         </div>
@@ -910,36 +972,48 @@ export default function HomePage() {
           <Image src="/images/certificate-background.png" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-8 left-22 z-10">
-          <Image src="/images/topleft-logo.png" alt="Left logo" width={125} height={125} className="" />
+        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+          <Image
+              src="/images/topleft-logo.png"
+              alt="Left logo"
+              width={125}
+              height={125}
+              className="md:w-[180px] md:h-[100px]"
+          />
         </div>
 
-        <div className="absolute top-2 right-15 z-10">
-          <Image src="/images/topright-logo.png" alt="Zhejiang Lab" width={250} height={250} className="" />
+        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+          <Image
+              src="/images/topright-logo.png"
+              alt="Zhejiang Lab"
+              width={200}
+              height={200}
+              className="md:w-[280px] md:h-[150px]"
+          />
         </div>
 
-        <div className="relative z-10 min-h-screen flex items-center justify-center py-8">
-          <div className="max-w-6xl mx-4">
-            <Card className="bg-white/10 backdrop-blur-sm border-white/30 p-8 rounded-3xl">
+        <div className="relative z-10 min-h-screen flex items-center justify-center py-8 px-4">
+          <div className="max-w-6xl w-full">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/30 p-4 md:p-8 rounded-3xl">
               {certificateData && (
-                  <div className="space-y-6">
-                    <div className="flex justify-center">
+                  <div className="space-y-4 md:space-y-6">
+                    <div className="flex justify-center overflow-x-auto">
                       <Certificate ref={certificateRef} data={certificateData} showBack={showCertificateBack} />
                     </div>
 
                     <div className="flex flex-col items-center space-y-4">
-                      <div className="flex space-x-4">
+                      <div className="flex space-x-2 md:space-x-4">
                         <Button
                             onClick={() => setShowCertificateBack(false)}
                             variant={!showCertificateBack ? "default" : "outline"}
-                            className="px-6 py-2"
+                            className="px-4 md:px-6 py-2 text-sm md:text-base"
                         >
                           正面
                         </Button>
                         <Button
                             onClick={() => setShowCertificateBack(true)}
                             variant={showCertificateBack ? "default" : "outline"}
-                            className="px-6 py-2"
+                            className="px-4 md:px-6 py-2 text-sm md:text-base"
                         >
                           背面
                         </Button>
@@ -949,13 +1023,13 @@ export default function HomePage() {
                         <Button
                             onClick={downloadCertificateAsPDF}
                             disabled={isLoading}
-                            className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-8 py-3 rounded-full disabled:opacity-50"
+                            className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-6 md:px-8 py-3 rounded-full disabled:opacity-50 text-sm md:text-base"
                         >
                           {isLoading ? "生成中..." : "下载PDF"}
                         </Button>
                       </div>
 
-                      <div className="text-center text-white/80 text-sm space-y-1">
+                      <div className="text-center text-white/80 text-xs md:text-sm space-y-1">
                         <p>证书编号: {certificateData.fullNo}</p>
                         <p>生成时间: {new Date().toLocaleString("zh-CN")}</p>
                       </div>
@@ -985,16 +1059,21 @@ export default function HomePage() {
 
         {showIncorrectPopup && (
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                 onClick={() => setShowIncorrectPopup(false)}
             >
               <div
-                  className="bg-gradient-to-br from-blue-900/90 to-cyan-900/90 backdrop-blur-md border border-cyan-400/50 rounded-2xl p-8 max-w-md mx-4 shadow-2xl"
+                  className="bg-gradient-to-br from-blue-900/90 to-cyan-900/90 backdrop-blur-md border border-cyan-400/50 rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
               >
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-cyan-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-cyan-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                        className="w-6 h-6 md:w-8 md:h-8 text-cyan-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
                       <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -1003,11 +1082,11 @@ export default function HomePage() {
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3">答案提示</h3>
-                  <p className="text-cyan-200 mb-6 leading-relaxed">正确答案是：{correctAnswer}</p>
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-3">答案提示</h3>
+                  <p className="text-cyan-200 mb-6 leading-relaxed text-sm md:text-base">正确答案是：{correctAnswer}</p>
                   <Button
                       onClick={() => setShowIncorrectPopup(false)}
-                      className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white px-6 py-2 rounded-full font-medium"
+                      className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white px-6 py-2 rounded-full font-medium text-sm md:text-base"
                   >
                     知道了
                   </Button>
