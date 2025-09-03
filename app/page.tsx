@@ -187,14 +187,14 @@ export default function HomePage() {
     }
     const selectedDate = new Date(formData.workTime)
     const maxDateObj = new Date("2025-09-05")
-    const minDateObj = new Date("1998-05-12")
+    const minDateObj = new Date("2017-09-06")
 
     if (selectedDate > maxDateObj) {
       setError("入职时间不能超过2025年9月5日")
       return
     }
     if (selectedDate < minDateObj) {
-      setError("入职时间不能早于1998年5月12日")
+      setError("入职时间不能早于2017年9月6日")
       return
     }
 
@@ -753,7 +753,7 @@ export default function HomePage() {
                             type="date"
                             value={formData.workTime}
                             onChange={(e) => setFormData((prev) => ({ ...prev, workTime: e.target.value }))}
-                            min="1998-05-12"
+                            min="2017-09-06"
                             max="2025-09-05"
                             className="w-full h-14 bg-black/30 backdrop-blur-sm border-2 border-cyan-400/30 rounded-xl text-white text-lg font-medium focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 px-4"
                             required
@@ -778,7 +778,7 @@ export default function HomePage() {
                               d="M13 10V3L4 14h7v7l9-11h-7z"
                           />
                         </svg>
-                        可选择范围：1998年5月12日 - 2025年9月5日
+                        可选择范围：2017年9月6日 - 2025年9月5日
                       </p>
                     </div>
                   </div>
