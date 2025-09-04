@@ -52,5 +52,51 @@ tar -czf $PKG `
   next.config.* `
   .env.production
 
-# 上传到服务器（只开了22端口没关系，SCP走22）
+
+
+
+
+
+
+
+
+
+# 以下为static部署需要
+
+# 2) 构建（output: export 会直接产出 out/）
+npm run build
+
+# 3) 打包 out/ （纯静态）
+$PKG="anniv-static-$(Get-Date -Format yyyyMMddHHmmss).tgz"
+tar -czf $PKG out
+
+# 4) 上传到服务器
 scp $PKG zjlab@10.101.88.143:/tmp/
+
+sudo bash -lc '
+set -euo pipefail
+
+APP_ROOT=/srv/anniv-frontend-static
+mkdir -p "$APP_ROOT/releases"
+
+# 取最新上传的静态包
+PKG=$(ls -t /tmp/anniv-static-*.tgz | head -n1)
+[ -n "$PKG" ] || { echo "未找到 /tmp/anniv-static-*.tgz"; exit 1; }
+
+# 解包到新版本目录
+REL="$APP_ROOT/releases/anniv-static-$(date +%Y%m%d%H%M%S)"
+mkdir -p "$REL"
+tar -xzf "$PKG" -C "$REL"
+
+# out/ 就是静态根，切到 current
+ln -sfn "$REL/out" "$APP_ROOT/current"
+
+# 统一权限（你这台 nginx 进程用户是 www-data）
+chown -R www-data:www-data "$APP_ROOT"
+
+echo "✅ 发布完成：$APP_ROOT/current -> $REL/out"
+'
+
+
+
+ssh -L 18080:127.0.0.1:80 -L 18443:127.0.0.1:443 zjlab@10.101.88.143

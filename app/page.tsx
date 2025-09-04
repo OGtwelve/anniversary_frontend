@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import Certificate from "@/components/certificate"
+import { apiFetch } from "@/lib/api";
 
 interface QuizOption {
   id: number
@@ -66,7 +67,7 @@ export default function HomePage() {
       setError("")
       console.log("[v0] Fetching quiz data...")
 
-      const response = await fetch("/api/anniv/quiz")
+      const response = await apiFetch("/anniv/quiz");
       const result = await response.json()
 
       if (result.message === "ok" && result.data) {
@@ -91,7 +92,7 @@ export default function HomePage() {
       setError("")
       console.log("[v0] Validating quiz answers:", selectedAnswers)
 
-      const response = await fetch("/api/anniv/quiz/validate", {
+      const response = await apiFetch("/anniv/quiz/validate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,7 +137,7 @@ export default function HomePage() {
         passToken,
       })
 
-      const response = await fetch("/api/anniv/certificates/issue", {
+      const response = await apiFetch("/anniv/certificates/issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -314,6 +315,38 @@ export default function HomePage() {
     }
   }
 
+  // 覆盖填充：填满页面，必要时裁切，支持 overscan 微放大防止细白缝
+  function addImageCover(
+      pdf: any,
+      dataUrl: string,
+      pageW: number,
+      pageH: number,
+      imgW: number,
+      imgH: number,
+      overscan = 1.002 // 微放大 0.2%
+  ) {
+    const imgAspect = imgW / imgH
+    const pageAspect = pageW / pageH
+
+    let drawW: number, drawH: number, x: number, y: number
+
+    if (imgAspect > pageAspect) {
+      // 图片更“宽”：以页面高度为基准放大，左右会超出页面，被裁切
+      drawH = pageH * overscan
+      drawW = drawH * imgAspect
+      x = (pageW - drawW) / 2 // 可能是负数，超出的部分会被裁掉
+      y = (pageH - drawH) / 2
+    } else {
+      // 图片更“高”：以页面宽度为基准放大，上下会被裁切
+      drawW = pageW * overscan
+      drawH = drawW / imgAspect
+      x = (pageW - drawW) / 2
+      y = (pageH - drawH) / 2
+    }
+
+    pdf.addImage(dataUrl, "PNG", x, y, drawW, drawH, undefined, "FAST")
+  }
+
   // 计算导出参数：根据小屏/大屏与 DPR 自动决定宽高与缩放
   function getExportParams(node: HTMLElement) {
     const rect = node.getBoundingClientRect()
@@ -331,6 +364,19 @@ export default function HomePage() {
     return { exportWidth, exportHeight, scale }
   }
 
+
+  async function getImgSize(dataUrl: string): Promise<{ w: number; h: number }> {
+    return new Promise((resolve, reject) => {
+      // 用全局的 Image，避开 next/image 同名问题
+      const img = new window.Image();
+      img.decoding = "async";
+      // 如果不是 dataURL，而是跨域图片，可加：
+      // img.crossOrigin = "anonymous";
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => reject(new Error("Failed to load image for size"));
+      img.src = dataUrl;
+    });
+  }
 
   const downloadCertificateAsPDF = async () => {
     if (!certificateRef.current || !certificateData) {
@@ -413,13 +459,18 @@ export default function HomePage() {
         })
       }
 
-      // ====== 生成 PDF（保持不变）======
-      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [210, 148] })
-      const imgWidth = 210
-      const imgHeight = 148
-      pdf.addImage(frontDataUrl, "PNG", 0, 0, imgWidth, imgHeight)
-      pdf.addPage()
-      pdf.addImage(backDataUrl, "PNG", 0, 0, imgWidth, imgHeight)
+      // 先拿到图片像素尺寸
+      const frontSize = await getImgSize(frontDataUrl) // {w,h}
+      const backSize  = await getImgSize(backDataUrl)
+
+// 用“px”为单位，页面尺寸 = 图片像素尺寸
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [frontSize.w, frontSize.h] })
+
+      pdf.addImage(frontDataUrl, "PNG", 0, 0, frontSize.w, frontSize.h, undefined, "FAST")
+
+      pdf.addPage([backSize.w, backSize.h], "landscape")
+      pdf.addImage(backDataUrl, "PNG", 0, 0, backSize.w, backSize.h, undefined, "FAST")
+
       pdf.save(`${certificateData.name}-宇宙证书-完整版.pdf`)
     } catch (error) {
       console.error("[v0] PDF generation failed:", error)

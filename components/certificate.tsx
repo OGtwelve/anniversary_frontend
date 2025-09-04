@@ -36,7 +36,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({data, showBac
                         className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">
                         <div className="text-lg md:text-2xl font-medium leading-relaxed tracking-wide max-w-2xl px-4">
                             <div
-                                className={`${wishesFont.className} wishes-text wishes-glow-strong text-[18px] md:text-[35px] font-normal`}>
+                                className={`${wishesFont.className} wishes-text wishes-glow-strong text-[16px] md:text-[35px] font-normal`}>
                                 {data.wishes || "愿你在浩瀚宇宙中找到属于自己的星辰大海"}</div>
                         </div>
                     </div>
