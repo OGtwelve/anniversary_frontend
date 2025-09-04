@@ -60,6 +60,44 @@ export default function HomePage() {
   const [showCertificateBack, setShowCertificateBack] = useState(false)
   const [showIncorrectPopup, setShowIncorrectPopup] = useState(false)
   const [correctAnswer, setCorrectAnswer] = useState("")
+  const [showGatePopup, setShowGatePopup] = useState(false);
+  const [gateOpenAt, setGateOpenAt] = useState<string>("");
+
+
+  // 时间格式化（后端 LocalDateTime 序列化一般是 2025-09-01T09:00:00）
+  const fmtDateTime = (iso?: string) => {
+    if (!iso) return "待定";
+    try {
+      return new Date(iso).toLocaleString("zh-CN", { hour12: false });
+    } catch {
+      return iso;
+    }
+  };
+
+  const handleStartExplore = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      const resp = await apiFetch("/anniv/gate/check");
+      const json = await resp.json();
+
+      if (json?.data === true) {
+        // 已开启，进入问卷
+        setCurrentStep("quiz");
+      } else {
+        // 未开启：弹窗提示 + 显示开启时间
+        setGateOpenAt(fmtDateTime(json?.openAt));
+        setShowGatePopup(true);
+      }
+    } catch (e) {
+      setGateOpenAt(""); // 无法获取时间
+      setShowGatePopup(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const fetchQuizData = async () => {
     try {
@@ -542,7 +580,7 @@ export default function HomePage() {
             </p>
 
             <Button
-                onClick={() => setCurrentStep("quiz")}
+                onClick={handleStartExplore}
                 className="z-1000 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-6 md:px-8 py-4 md:py-6 text-lg md:text-xl font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               点击探秘
@@ -926,7 +964,7 @@ export default function HomePage() {
                           </svg>
                         </div>
                       </div>
-                      <p className="text-xs text-white/60 mt-2 flex items-center gap-1">
+                      <p className="text-[11px] text-white/60 mt-2 flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                               strokeLinecap="round"
@@ -1133,6 +1171,37 @@ export default function HomePage() {
         {currentStep === "form" && renderFormSection()}
         {currentStep === "loading" && renderLoadingSection()}
         {currentStep === "result" && renderResultSection()}
+
+        {showGatePopup && (
+            <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                onClick={() => setShowGatePopup(false)}
+            >
+              <div
+                  className="bg-gradient-to-br from-blue-900/90 to-cyan-900/90 backdrop-blur-md border border-cyan-400/50 rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+              >
+                <div className="text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-cyan-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-3">暂未开启</h3>
+                  <p className="text-cyan-200 mb-6 leading-relaxed text-sm md:text-base">
+                    开启时间：{gateOpenAt || "待定"}
+                  </p>
+                  <Button
+                      onClick={() => setShowGatePopup(false)}
+                      className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white px-6 py-2 rounded-full font-medium text-sm md:text-base"
+                  >
+                    我知道了
+                  </Button>
+                </div>
+              </div>
+            </div>
+        )}
+
 
         {showIncorrectPopup && (
             <div
