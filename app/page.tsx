@@ -502,23 +502,23 @@ export default function HomePage() {
           <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" priority />
         </div>
 
-        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+        <div className="absolute top-4 md:top-10 left-10 md:left-28 z-10">
           <Image
               src="/images/topleft-logo.png"
               alt="Left logo"
               width={125}
               height={125}
-              className="md:w-[180px] md:h-[100px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
-        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+        <div className="absolute top-2 md:top-5 right-0.5 md:right-28 z-10">
           <Image
               src="/images/topright-logo.png"
               alt="Zhejiang Lab"
               width={200}
               height={200}
-              className="md:w-[280px] md:h-[150px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
@@ -558,23 +558,23 @@ export default function HomePage() {
           <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+        <div className="absolute top-4 md:top-10 left-10 md:left-28 z-10">
           <Image
               src="/images/topleft-logo.png"
               alt="Left logo"
               width={125}
               height={125}
-              className="md:w-[180px] md:h-[100px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
-        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+        <div className="absolute top-2 md:top-5 right-0.5 md:right-28 z-10">
           <Image
               src="/images/topright-logo.png"
               alt="Zhejiang Lab"
               width={200}
               height={200}
-              className="md:w-[280px] md:h-[150px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
@@ -724,23 +724,23 @@ export default function HomePage() {
           <Image src="/images/background.jpg" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+        <div className="absolute top-4 md:top-10 left-10 md:left-28 z-10">
           <Image
               src="/images/topleft-logo.png"
               alt="Left logo"
               width={125}
               height={125}
-              className="md:w-[180px] md:h-[100px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
-        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+        <div className="absolute top-2 md:top-5 right-0.5 md:right-28 z-10">
           <Image
               src="/images/topright-logo.png"
               alt="Zhejiang Lab"
               width={200}
               height={200}
-              className="md:w-[280px] md:h-[150px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
@@ -811,23 +811,23 @@ export default function HomePage() {
           <Image src="/images/form-background.png" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+        <div className="absolute top-4 md:top-10 left-10 md:left-28 z-10">
           <Image
               src="/images/topleft-logo.png"
               alt="Left logo"
               width={125}
               height={125}
-              className="md:w-[180px] md:h-[100px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
-        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+        <div className="absolute top-2 md:top-5 right-0.5 md:right-28 z-10">
           <Image
               src="/images/topright-logo.png"
               alt="Zhejiang Lab"
               width={200}
               height={200}
-              className="md:w-[280px] md:h-[150px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
@@ -991,23 +991,23 @@ export default function HomePage() {
           <Image src="/images/loading-background.png" alt="Loading background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+        <div className="absolute top-4 md:top-10 left-10 md:left-28 z-10">
           <Image
               src="/images/topleft-logo.png"
               alt="Left logo"
               width={125}
               height={125}
-              className="md:w-[180px] md:h-[100px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
-        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+        <div className="absolute top-2 md:top-5 right-0.5 md:right-28 z-10">
           <Image
               src="/images/topright-logo.png"
               alt="Zhejiang Lab"
               width={200}
               height={200}
-              className="md:w-[280px] md:h-[150px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
@@ -1046,23 +1046,23 @@ export default function HomePage() {
           <Image src="/images/certificate-background.png" alt="Space background" fill className="object-cover" />
         </div>
 
-        <div className="absolute top-4 md:top-8 left-10 md:left-22 z-10">
+        <div className="absolute top-4 md:top-10 left-10 md:left-28 z-10">
           <Image
               src="/images/topleft-logo.png"
               alt="Left logo"
               width={125}
               height={125}
-              className="md:w-[180px] md:h-[100px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
-        <div className="absolute top-2 md:top-2 right-2 md:right-15 z-10">
+        <div className="absolute top-2 md:top-5 right-0.5 md:right-28 z-10">
           <Image
               src="/images/topright-logo.png"
               alt="Zhejiang Lab"
               width={200}
               height={200}
-              className="md:w-[280px] md:h-[150px]"
+              className="scale-100 md:scale-150"
           />
         </div>
 
