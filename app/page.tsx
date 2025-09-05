@@ -509,7 +509,8 @@ export default function HomePage() {
       pdf.addPage([backSize.w, backSize.h], "landscape")
       pdf.addImage(backDataUrl, "PNG", 0, 0, backSize.w, backSize.h, undefined, "FAST")
 
-      pdf.save(`${certificateData.name}-宇宙证书-完整版.pdf`)
+      // pdf.save(`${certificateData.name}-宇宙证书-完整版.pdf`)
+      pdf.save(`${certificateData.name}-登星证铭.pdf`)
     } catch (error) {
       console.error("[v0] PDF generation failed:", error)
       setError(`PDF生成失败: ${error instanceof Error ? error.message : "未知错误"}`)
@@ -573,17 +574,17 @@ export default function HomePage() {
 
         <div className="relative z-10 min-h-screen flex items-center justify-center md:justify-end px-4 md:pr-32">
           <div className="text-center md:text-right text-white max-w-2xl">
-            <h1 className="text-4xl md:text-7xl font-bold mb-6 md:mb-8 text-balance leading-tight">探索宇宙的钥匙</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 md:mb-8 text-balance leading-tight">"登星"计划 即刻启动</h1>
 
             <p className="text-lg md:text-3xl mb-8 md:mb-12 opacity-90 leading-relaxed font-light">
-              回答几个问题, 解锁属于你的星际祝福
+              回答几个问题, 登陆 "三体计算星座"
             </p>
 
             <Button
                 onClick={handleStartExplore}
                 className="z-1000 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-6 md:px-8 py-4 md:py-6 text-lg md:text-xl font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              点击探秘
+              点击登陆
             </Button>
           </div>
         </div>
@@ -793,9 +794,10 @@ export default function HomePage() {
               }}
           >
             <div className="text-center text-white px-4 md:px-8">
-              <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 text-balance leading-relaxed">
-                请写下室友对于未来的实验室或自己写下自己的祝福
-              </h2>
+              <p className="text-xl md:text-1xl font-bold text-balance leading-relaxed">
+                一句祝福，一份心意。
+              </p>
+              <p  className="text-xl md:text-1xl font-bold mb-6 md:mb-10 text-balance leading-relaxed">写下您对之江实验室的期盼，或对自己未来的期许。</p>
 
               <div className="space-y-6 mb-6 md:mb-10">
               <textarea
