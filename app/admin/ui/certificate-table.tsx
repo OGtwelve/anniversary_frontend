@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Search, MoreHorizontal, Download, Settings, X, Check } from "lucide-react"
-import { apiExport } from "@/lib/api"
+import { Search, Download, Settings, X, Check, Edit2, Trash2, Save, XCircle } from "lucide-react"
+import { apiExport, apiUpdateCertificate, apiDeleteCertificate } from "@/lib/api"
 
 interface Certificate {
     id: string
@@ -12,10 +12,8 @@ interface Certificate {
     workYears: number
     blessing: string
     createdAt: string
-    status: "generated" | "pending"
 }
 
-// 组件顶部，紧跟常量处
 const COL_KEY_MAP: Record<keyof Certificate, string> = {
     id: "fullNo",
     name: "name",
@@ -24,12 +22,28 @@ const COL_KEY_MAP: Record<keyof Certificate, string> = {
     workYears: "workDays",
     blessing: "wishes",
     createdAt: "createdAt",
-    status: "status",
-};
+}
 
+/** 把显示用日期(yyyy/M/d 或 yyyy-MM-dd...) 转成 <input type="date"> 的 yyyy-MM-dd */
+function toDateInputValue(displayDate: string): string {
+    if (!displayDate) return ""
+    // 常见分隔替换
+    const s = displayDate.replaceAll(".", "-").replaceAll("/", "-")
+    // 可能是 'yyyy-MM-dd HH:mm:ss'
+    const base = s.slice(0, 10)
+    const parts = base.split("-").map((p) => Number(p))
+    if (parts.length === 3 && !parts.some(Number.isNaN)) {
+        const [y, m, d] = parts
+        const mm = String(m).padStart(2, "0")
+        const dd = String(d).padStart(2, "0")
+        return `${y}-${mm}-${dd}`
+    }
+    return ""
+}
 
 interface CertificateTableProps {
     certificates: Certificate[]
+    onUpdate?: () => void
 }
 
 interface ExportColumn {
@@ -38,9 +52,15 @@ interface ExportColumn {
     selected: boolean
 }
 
-export default function CertificateTable({ certificates }: CertificateTableProps) {
+export default function CertificateTable({ certificates, onUpdate }: CertificateTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [showExportModal, setShowExportModal] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editingData, setEditingData] = useState<Partial<Certificate>>({})
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
+
     const [exportColumns, setExportColumns] = useState<ExportColumn[]>([
         { key: "id", label: "证书编号", selected: true },
         { key: "name", label: "姓名", selected: true },
@@ -48,48 +68,109 @@ export default function CertificateTable({ certificates }: CertificateTableProps
         { key: "joinDate", label: "入职时间", selected: true },
         { key: "workYears", label: "工龄(天)", selected: true },
         { key: "blessing", label: "祝福语", selected: true },
-        { key: "createdAt", label: "生成时间", selected: true },
+        { key: "createdAt", label: "首次注册时间", selected: true },
     ])
     const [exporting, setExporting] = useState(false)
 
-    const filteredCertificates = certificates.filter(
-        (cert) => cert.name.includes(searchTerm) || cert.employeeId.includes(searchTerm) || cert.id.includes(searchTerm),
-    )
+    const filteredCertificates = certificates.filter((cert) => {
+        const q = searchTerm.trim()
+        if (!q) return true
+        return cert.name.includes(q) || cert.employeeId.includes(q) || cert.id.includes(q)
+    })
+
+    const handleEdit = (cert: Certificate) => {
+        console.log("[v0] Edit button clicked for certificate:", cert.id)
+        console.log("[v0] Button click event fired successfully")
+        setEditingId(cert.id)
+        setEditingData({
+            name: cert.name,
+            employeeId: cert.employeeId,
+            joinDate: toDateInputValue(cert.joinDate),
+            workYears: cert.workYears,
+            blessing: cert.blessing,
+        })
+    }
+
+    const handleSave = async () => {
+        if (!editingId || !editingData) return
+
+        console.log("[v0] Save button clicked, data:", editingData)
+        setLoading(true)
+        try {
+            await apiUpdateCertificate(editingId, editingData)
+            setEditingId(null)
+            setEditingData({})
+            onUpdate?.()
+            alert("修改成功")
+        } catch (error) {
+            console.error("修改失败:", error)
+            alert("修改失败，请重试")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleCancel = () => {
+        setEditingId(null)
+        setEditingData({})
+    }
+
+    const handleDelete = (id: string) => {
+        console.log("[v0] Delete button clicked for certificate:", id)
+        console.log("[v0] Delete button click event fired successfully")
+        setDeletingId(id)
+        setShowDeleteModal(true)
+    }
+
+    const confirmDelete = async () => {
+        if (!deletingId) return
+
+        setLoading(true)
+        try {
+            await apiDeleteCertificate(deletingId)
+            setShowDeleteModal(false)
+            setDeletingId(null)
+            onUpdate?.()
+            alert("删除成功")
+        } catch (error) {
+            console.error("删除失败:", error)
+            alert("删除失败，请重试")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const handleExport = async () => {
-        // 至少选择一列
-        const selected = exportColumns.filter((c) => c.selected);
+        const selected = exportColumns.filter((c) => c.selected)
         if (selected.length === 0) {
-            alert("请至少选择一列再导出");
-            return;
+            alert("请至少选择一列再导出")
+            return
         }
 
-        setExporting(true);
+        setExporting(true)
         try {
-            // 映射到后端字段名，并保留勾选顺序
-            const columns = selected.map((c) => COL_KEY_MAP[c.key]);
-
+            const columns = selected.map((c) => COL_KEY_MAP[c.key])
             const payload = {
-                columns,                      // 字符串数组
-                q: searchTerm.trim() || undefined, // 简单搜索（与列表一致）
-                limit: 5000,                  // 导出上限（可按需调整/去掉）
-                format: "csv",                // 先走 csv（后端已实现；xlsx 亦可）
-            };
+                columns,
+                q: searchTerm.trim() || undefined,
+                limit: 5000,
+                format: "csv",
+            }
 
             await apiExport(
                 "/admin/certificates/export",
                 payload,
-                `certificates_${new Date().toISOString().slice(0, 10)}.csv`
-            );
+                `certificates_${new Date().toISOString().slice(0, 10)}.csv`,
+            )
 
-            setShowExportModal(false);
+            setShowExportModal(false)
         } catch (err) {
-            console.error("导出失败:", err);
-            alert("导出失败，请重试");
+            console.error("导出失败:", err)
+            alert("导出失败，请重试")
         } finally {
-            setExporting(false);
+            setExporting(false)
         }
-    };
+    }
 
     const toggleColumn = (index: number) => {
         setExportColumns((prev) => prev.map((col, i) => (i === index ? { ...col, selected: !col.selected } : col)))
@@ -167,8 +248,8 @@ export default function CertificateTable({ certificates }: CertificateTableProps
                     </div>
                 </div>
 
-                <div style={{ overflowX: "auto" }}>
-                    <table className="admin-table">
+                <div style={{ overflowX: "auto", position: "relative", zIndex: 2 }}>
+                    <table className="admin-table" style={{ position: "relative", zIndex: 2 }}>
                         <thead>
                         <tr>
                             <th>证书编号</th>
@@ -177,17 +258,71 @@ export default function CertificateTable({ certificates }: CertificateTableProps
                             <th>入职时间</th>
                             <th>工龄(天)</th>
                             <th>祝福语</th>
-                            <th>生成时间</th>
+                            <th>首次注册时间</th>
+                            <th>操作</th>
                         </tr>
                         </thead>
                         <tbody>
                         {filteredCertificates.map((cert) => (
                             <tr key={cert.id}>
                                 <td style={{ fontFamily: "monospace", fontSize: "13px" }}>{cert.id}</td>
-                                <td style={{ fontWeight: "500" }}>{cert.name}</td>
-                                <td>{cert.employeeId}</td>
-                                <td>{cert.joinDate}</td>
-                                <td>{cert.workYears}</td>
+                                <td style={{ fontWeight: "500" }}>
+                                    {editingId === cert.id ? (
+                                        <input
+                                            type="text"
+                                            value={editingData.name || ""}
+                                            onChange={(e) => setEditingData({ ...editingData, name: e.target.value })}
+                                            className="admin-input"
+                                            style={{ width: "100%", minWidth: "80px" }}
+                                        />
+                                    ) : (
+                                        cert.name
+                                    )}
+                                </td>
+                                <td>
+                                    {editingId === cert.id ? (
+                                        <input
+                                            type="text"
+                                            value={editingData.employeeId || ""}
+                                            onChange={(e) => setEditingData({ ...editingData, employeeId: e.target.value })}
+                                            className="admin-input"
+                                            style={{ width: "100%", minWidth: "80px" }}
+                                        />
+                                    ) : (
+                                        cert.employeeId
+                                    )}
+                                </td>
+                                <td>
+                                    {editingId === cert.id ? (
+                                        <input
+                                            type="date"
+                                            value={editingData.joinDate || ""}
+                                            onChange={(e) => setEditingData({ ...editingData, joinDate: e.target.value })}
+                                            className="admin-input"
+                                            style={{ width: "100%", minWidth: "120px" }}
+                                        />
+                                    ) : (
+                                        cert.joinDate
+                                    )}
+                                </td>
+                                <td>
+                                    {editingId === cert.id ? (
+                                        <input
+                                            type="number"
+                                            value={editingData.workYears ?? 0}
+                                            onChange={(e) =>
+                                                setEditingData({
+                                                    ...editingData,
+                                                    workYears: Number.isFinite(Number(e.target.value)) ? Number(e.target.value) : 0,
+                                                })
+                                            }
+                                            className="admin-input"
+                                            style={{ width: "100%", minWidth: "60px" }}
+                                        />
+                                    ) : (
+                                        cert.workYears
+                                    )}
+                                </td>
                                 <td
                                     style={{
                                         maxWidth: "200px",
@@ -196,33 +331,187 @@ export default function CertificateTable({ certificates }: CertificateTableProps
                                         whiteSpace: "nowrap",
                                     }}
                                 >
-                                    {cert.blessing}
+                                    {editingId === cert.id ? (
+                                        <input
+                                            type="text"
+                                            value={editingData.blessing || ""}
+                                            onChange={(e) => setEditingData({ ...editingData, blessing: e.target.value })}
+                                            className="admin-input"
+                                            style={{ width: "100%", minWidth: "150px" }}
+                                        />
+                                    ) : (
+                                        cert.blessing
+                                    )}
                                 </td>
                                 <td style={{ fontSize: "13px", color: "#64748b" }}>{cert.createdAt}</td>
                                 <td>
-                                    <div style={{ display: "flex", gap: "8px" }}>
-                                        <button
-                                            className="admin-btn-primary"
-                                            style={{
-                                                padding: "4px 8px",
-                                                fontSize: "12px",
-                                                backgroundColor: "#10b981",
-                                            }}
-                                        >
-                                            <Download size={14} style={{ marginRight: "4px" }} />
-                                            已生成
-                                        </button>
-                                        <button
-                                            style={{
-                                                background: "none",
-                                                border: "none",
-                                                cursor: "pointer",
-                                                padding: "4px",
-                                                color: "#64748b",
-                                            }}
-                                        >
-                                            <MoreHorizontal size={16} />
-                                        </button>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            gap: "8px",
+                                            position: "relative",
+                                            zIndex: 10,
+                                            pointerEvents: "auto",
+                                        }}
+                                    >
+                                        {editingId === cert.id ? (
+                                            <>
+                                                <button
+                                                    onClick={handleSave}
+                                                    disabled={loading}
+                                                    className="admin-btn-primary"
+                                                    style={{
+                                                        padding: "6px 12px",
+                                                        fontSize: "12px",
+                                                        backgroundColor: "#10b981",
+                                                        opacity: loading ? 0.6 : 1,
+                                                        minWidth: "60px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        position: "relative",
+                                                        zIndex: 1,
+                                                    }}
+                                                >
+                                                    <Save size={14} style={{ marginRight: "4px" }} />
+                                                    保存
+                                                </button>
+                                                <button
+                                                    onClick={handleCancel}
+                                                    disabled={loading}
+                                                    style={{
+                                                        padding: "6px 12px",
+                                                        fontSize: "12px",
+                                                        backgroundColor: "#64748b",
+                                                        color: "white",
+                                                        border: "none",
+                                                        borderRadius: "4px",
+                                                        cursor: loading ? "not-allowed" : "pointer",
+                                                        opacity: loading ? 0.6 : 1,
+                                                        minWidth: "60px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        position: "relative",
+                                                        zIndex: 1,
+                                                    }}
+                                                >
+                                                    <XCircle size={14} style={{ marginRight: "4px" }} />
+                                                    取消
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        console.log("[v0] Edit button clicked - event object:", e)
+                                                        console.log("[v0] Edit button clicked - target:", e.target)
+                                                        console.log("[v0] Edit button clicked - currentTarget:", e.currentTarget)
+                                                        console.log("[v0] Edit button clicked for certificate:", cert.id)
+                                                        console.log("[v0] Loading state:", loading)
+                                                        console.log("[v0] About to call handleEdit")
+                                                        handleEdit(cert)
+                                                    }}
+                                                    onMouseDown={(e) => {
+                                                        console.log("[v0] Edit button mouse down")
+                                                        e.preventDefault()
+                                                    }}
+                                                    onMouseUp={(e) => {
+                                                        console.log("[v0] Edit button mouse up")
+                                                    }}
+                                                    disabled={loading}
+                                                    style={{
+                                                        padding: "6px 12px",
+                                                        fontSize: "12px",
+                                                        backgroundColor: "#3b82f6",
+                                                        color: "white",
+                                                        border: "none",
+                                                        borderRadius: "4px",
+                                                        cursor: loading ? "not-allowed" : "pointer",
+                                                        opacity: loading ? 0.6 : 1,
+                                                        minWidth: "60px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        position: "relative",
+                                                        zIndex: 1000,
+                                                        transition: "all 0.2s ease",
+                                                        pointerEvents: "auto",
+                                                        userSelect: "none",
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        if (!loading) {
+                                                            e.currentTarget.style.backgroundColor = "#2563eb"
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        if (!loading) {
+                                                            e.currentTarget.style.backgroundColor = "#3b82f6"
+                                                        }
+                                                    }}
+                                                >
+                                                    <Edit2 size={14} style={{ marginRight: "4px", pointerEvents: "none" }} />
+                                                    修改
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        console.log("[v0] Delete button clicked - event object:", e)
+                                                        console.log("[v0] Delete button clicked - target:", e.target)
+                                                        console.log("[v0] Delete button clicked - currentTarget:", e.currentTarget)
+                                                        console.log("[v0] Delete button clicked for certificate:", cert.id)
+                                                        console.log("[v0] Loading state:", loading)
+                                                        console.log("[v0] About to call handleDelete")
+                                                        handleDelete(cert.id)
+                                                    }}
+                                                    onMouseDown={(e) => {
+                                                        console.log("[v0] Delete button mouse down")
+                                                        e.preventDefault()
+                                                    }}
+                                                    onMouseUp={(e) => {
+                                                        console.log("[v0] Delete button mouse up")
+                                                    }}
+                                                    disabled={loading}
+                                                    style={{
+                                                        padding: "6px 12px",
+                                                        fontSize: "12px",
+                                                        backgroundColor: "#ef4444",
+                                                        color: "white",
+                                                        border: "none",
+                                                        borderRadius: "4px",
+                                                        cursor: loading ? "not-allowed" : "pointer",
+                                                        opacity: loading ? 0.6 : 1,
+                                                        minWidth: "60px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        position: "relative",
+                                                        zIndex: 1000,
+                                                        transition: "all 0.2s ease",
+                                                        pointerEvents: "auto",
+                                                        userSelect: "none",
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        if (!loading) {
+                                                            e.currentTarget.style.backgroundColor = "#dc2626"
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        if (!loading) {
+                                                            e.currentTarget.style.backgroundColor = "#ef4444"
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 size={14} style={{ marginRight: "4px", pointerEvents: "none" }} />
+                                                    删除
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -243,6 +532,75 @@ export default function CertificateTable({ certificates }: CertificateTableProps
                     </div>
                 )}
             </div>
+
+            {showDeleteModal && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 1000,
+                    }}
+                >
+                    <div
+                        className="admin-card"
+                        style={{
+                            width: "400px",
+                            padding: "24px",
+                            margin: "20px",
+                        }}
+                    >
+                        <div style={{ marginBottom: "20px" }}>
+                            <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: "600", color: "#ef4444" }}>确认删除</h3>
+                            <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
+                                确定要删除这条证书记录吗？此操作不可撤销。
+                            </p>
+                        </div>
+
+                        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false)
+                                    setDeletingId(null)
+                                }}
+                                disabled={loading}
+                                style={{
+                                    padding: "8px 16px",
+                                    border: "1px solid #e2e8f0",
+                                    borderRadius: "4px",
+                                    backgroundColor: "white",
+                                    color: "#64748b",
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    opacity: loading ? 0.6 : 1,
+                                }}
+                            >
+                                取消
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                disabled={loading}
+                                style={{
+                                    padding: "8px 16px",
+                                    backgroundColor: "#ef4444",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    opacity: loading ? 0.6 : 1,
+                                }}
+                            >
+                                {loading ? "删除中..." : "确认删除"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showExportModal && (
                 <div
@@ -346,7 +704,8 @@ export default function CertificateTable({ certificates }: CertificateTableProps
                                     borderRadius: "4px",
                                     backgroundColor: "white",
                                     color: "#64748b",
-                                    cursor: "pointer",
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    opacity: loading ? 0.6 : 1,
                                 }}
                             >
                                 取消

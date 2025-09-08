@@ -9,6 +9,11 @@ import SurveyStats from "../ui/survey-stats"
 import TrendChart from "../ui/trend-chart"
 import { FileText, Users, LogOut } from "lucide-react"
 import { apiFetch } from "@/lib/api"
+import { jwtDecode } from "jwt-decode"
+
+interface JwtPayload {
+    exp: number // 过期时间 (秒)
+}
 
 interface DashboardStats {
   totalCertificates: number
@@ -48,6 +53,21 @@ export default function AdminDashboard() {
       router.push("/admin/login")
       return
     }
+
+      try {
+          const { exp } = jwtDecode<JwtPayload>(token)
+          if (Date.now() >= exp * 1000) {
+              // 已过期
+              localStorage.removeItem("admin_token")
+              localStorage.removeItem("admin_user")
+              router.push("/admin/login")
+              return
+          }
+      } catch (err) {
+          console.error("JWT 解析失败:", err)
+          router.push("/admin/login")
+          return
+      }
 
     if (user) {
       setUserInfo(JSON.parse(user))

@@ -14,6 +14,13 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     const id = setTimeout(() => controller.abort(), 15000); // 15s 超时
     try {
         const res = await fetch(apiUrl(path), { ...init, signal: controller.signal });
+        if (res.status === 401) {
+            // token 失效，清理并跳转
+            localStorage.removeItem("admin_token")
+            localStorage.removeItem("admin_user")
+            window.location.href = "/admin/login" // 这里用 window.location，保证立即跳转
+            return Promise.reject(new Error("未授权或登录过期"))
+        }
         if (!res.ok) {
             const text = await res.text().catch(() => "");
             throw new Error(`HTTP ${res.status} ${res.statusText} ${text ? `- ${text}` : ""}`);
@@ -23,6 +30,39 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
         clearTimeout(id);
     }
 }
+
+// lib/api.ts 追加
+export async function apiUpdateCertificate(id: string, data: any) {
+    const res = await fetch(apiUrl(`/admin/certificates/${encodeURIComponent(id)}`), {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try { const j = await res.json(); if (j?.message) msg = j.message; } catch {}
+        throw new Error(msg);
+    }
+    return res.json(); // 返回更新后的行 DTO
+}
+
+export async function apiDeleteCertificate(id: string) {
+    const res = await fetch(apiUrl(`/admin/certificates/${encodeURIComponent(id)}`), {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        },
+    });
+    if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try { const j = await res.json(); if (j?.message) msg = j.message; } catch {}
+        throw new Error(msg);
+    }
+}
+
 
 export async function apiExport(
     path: string,
