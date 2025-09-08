@@ -1,8 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import {useEffect, useState} from "react"
 import { Search, Download, Settings, X, Check, Edit2, Trash2, Save, XCircle } from "lucide-react"
 import { apiExport, apiUpdateCertificate, apiDeleteCertificate } from "@/lib/api"
+import {Button} from "@/components/ui/button";
+import { RefreshCw } from "lucide-react"
+import {Input} from "@/components/ui/input";
 
 interface Certificate {
     id: string
@@ -24,7 +27,7 @@ const COL_KEY_MAP: Record<keyof Certificate, string> = {
     createdAt: "createdAt",
 }
 
-/** 把显示用日期(yyyy/M/d 或 yyyy-MM-dd...) 转成 <input type="date"> 的 yyyy-MM-dd */
+/** 把显示用日期(yyyy/M/d 或 yyyy-MM-dd...) 转成 <Input type="date"> 的 yyyy-MM-dd */
 function toDateInputValue(displayDate: string): string {
     if (!displayDate) return ""
     // 常见分隔替换
@@ -41,18 +44,100 @@ function toDateInputValue(displayDate: string): string {
     return ""
 }
 
-interface CertificateTableProps {
-    certificates: Certificate[]
-    onUpdate?: () => void
-}
-
 interface ExportColumn {
     key: keyof Certificate
     label: string
     selected: boolean
 }
 
-export default function CertificateTable({ certificates, onUpdate }: CertificateTableProps) {
+/** 轻量结果弹窗 */
+function ResultModal({
+                         open,
+                         type, // "success" | "error"
+                         title,
+                         message,
+                         onClose,
+                     }: {
+    open: boolean
+    type: "success" | "error"
+    title: string
+    message?: string
+    onClose: () => void
+}) {
+    if (!open) return null
+    const isSuccess = type === "success"
+    return (
+        <div
+            style={{
+                position: "fixed",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.35)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1100,
+            }}
+            onClick={onClose}
+        >
+            <div
+                className="admin-card"
+                style={{
+                    width: 420,
+                    padding: 20,
+                    margin: 16,
+                    borderTop: `4px solid ${isSuccess ? "#10b981" : "#ef4444"}`,
+                    boxShadow: "0 10px 30px rgba(0,0,0,.15)",
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                    <div
+                        style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: "999px",
+                            background: isSuccess ? "#10b981" : "#ef4444",
+                            display: "grid",
+                            placeItems: "center",
+                            flex: "0 0 auto",
+                        }}
+                    >
+                        {isSuccess ? <Check size={16} color="#fff" /> : <X size={16} color="#fff" />}
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+                </div>
+                {message && (
+                    <p style={{ margin: "8px 0 16px", color: "#475569", fontSize: 14, lineHeight: 1.6 }}>{message}</p>
+                )}
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                        onClick={onClose}
+                        className="admin-btn-primary"
+                        style={{ padding: "8px 14px" }}
+                    >
+                        我知道了
+                    </Button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+interface PaginationProps {
+    page: number
+    size: number
+    total: number
+    onPageChange: (p: number) => void
+    onSizeChange: (s: number) => void
+}
+
+interface CertificateTableProps {
+    certificates?: Certificate[]   // ← 可选
+    onUpdate?: () => void
+    pagination?: PaginationProps
+}
+
+export default function CertificateTable({ certificates = [], onUpdate, pagination }: CertificateTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [showExportModal, setShowExportModal] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -60,6 +145,37 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deletingId, setDeletingId] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
+
+    const [resultOpen, setResultOpen] = useState(false)
+    const [resultType, setResultType] = useState<"success" | "error">("success")
+    const [resultTitle, setResultTitle] = useState("操作成功")
+    const [resultMsg, setResultMsg] = useState<string | undefined>(undefined)
+
+    const totalPages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.size)) : 1
+
+    const [refreshing, setRefreshing] = useState(false)
+
+    const handleRefresh = async () => {
+        if (!onUpdate) return
+        try {
+            setRefreshing(true)
+            await Promise.resolve(onUpdate()) // 兼容 onUpdate 返回 void
+        } catch (e) {
+            console.error(e)
+            openResult("error", "刷新失败", "请稍后重试")
+        } finally {
+            setRefreshing(false)
+        }
+    }
+
+    function openResult(type: "success" | "error", title: string, message?: string) {
+        setResultType(type)
+        setResultTitle(title)
+        setResultMsg(message)
+        setResultOpen(true)
+        // 1.5s 自动关闭（也可改为 2s/3s）
+        window.setTimeout(() => setResultOpen(false), 1500)
+    }
 
     const [exportColumns, setExportColumns] = useState<ExportColumn[]>([
         { key: "id", label: "证书编号", selected: true },
@@ -93,22 +209,21 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
 
     const handleSave = async () => {
         if (!editingId || !editingData) return
-
-        console.log("[v0] Save button clicked, data:", editingData)
         setLoading(true)
         try {
             await apiUpdateCertificate(editingId, editingData)
             setEditingId(null)
             setEditingData({})
-            onUpdate?.()
-            alert("修改成功")
+            onUpdate?.() // 刷新
+            openResult("success", "修改成功")
         } catch (error) {
             console.error("修改失败:", error)
-            alert("修改失败，请重试")
+            openResult("error", "修改失败", "请稍后重试")
         } finally {
             setLoading(false)
         }
     }
+
 
     const handleCancel = () => {
         setEditingId(null)
@@ -124,17 +239,16 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
 
     const confirmDelete = async () => {
         if (!deletingId) return
-
         setLoading(true)
         try {
             await apiDeleteCertificate(deletingId)
             setShowDeleteModal(false)
             setDeletingId(null)
-            onUpdate?.()
-            alert("删除成功")
+            onUpdate?.() // 刷新
+            openResult("success", "删除成功")
         } catch (error) {
             console.error("删除失败:", error)
-            alert("删除失败，请重试")
+            openResult("error", "删除失败", "请稍后重试")
         } finally {
             setLoading(false)
         }
@@ -143,7 +257,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
     const handleExport = async () => {
         const selected = exportColumns.filter((c) => c.selected)
         if (selected.length === 0) {
-            alert("请至少选择一列再导出")
+            openResult("error", "导出失败", "请至少选择一列再导出")
             return
         }
 
@@ -164,9 +278,11 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
             )
 
             setShowExportModal(false)
+            // 导出一般不需要刷新，但如果后端会记录导出日志要展示，可调用 onUpdate?.()
+            openResult("success", "导出开始", "文件已开始下载")
         } catch (err) {
             console.error("导出失败:", err)
-            alert("导出失败，请重试")
+            openResult("error", "导出失败", "请稍后重试")
         } finally {
             setExporting(false)
         }
@@ -210,7 +326,18 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                     </div>
 
                     <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                        <button
+                        <Button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRefresh() }}
+                            disabled={refreshing}
+                            className="admin-btn-secondary"
+                            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", fontSize: 14, opacity: refreshing ? .6 : 1 }}
+                        >
+                            <RefreshCw size={16} />
+                            {refreshing ? "刷新中..." : "刷新"}
+                        </Button>
+                        <Button
+                            type="button"
                             onClick={() => setShowExportModal(true)}
                             className="admin-btn-primary"
                             style={{
@@ -223,7 +350,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                         >
                             <Download size={16} />
                             导出
-                        </button>
+                        </Button>
 
                         <div style={{ position: "relative", width: "300px" }}>
                             <Search
@@ -236,7 +363,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                     transform: "translateY(-50%)",
                                 }}
                             />
-                            <input
+                            <Input
                                 type="text"
                                 placeholder="搜索姓名、工号或证书编号..."
                                 value={searchTerm}
@@ -265,10 +392,10 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                         <tbody>
                         {filteredCertificates.map((cert) => (
                             <tr key={cert.id}>
-                                <td style={{ fontFamily: "monospace", fontSize: "13px" }}>{cert.id}</td>
+                                <td style={{ fontSize: "15px" }}>{cert.id}</td>
                                 <td style={{ fontWeight: "500" }}>
                                     {editingId === cert.id ? (
-                                        <input
+                                        <Input
                                             type="text"
                                             value={editingData.name || ""}
                                             onChange={(e) => setEditingData({ ...editingData, name: e.target.value })}
@@ -281,7 +408,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 </td>
                                 <td>
                                     {editingId === cert.id ? (
-                                        <input
+                                        <Input
                                             type="text"
                                             value={editingData.employeeId || ""}
                                             onChange={(e) => setEditingData({ ...editingData, employeeId: e.target.value })}
@@ -294,7 +421,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 </td>
                                 <td>
                                     {editingId === cert.id ? (
-                                        <input
+                                        <Input
                                             type="date"
                                             value={editingData.joinDate || ""}
                                             onChange={(e) => setEditingData({ ...editingData, joinDate: e.target.value })}
@@ -307,7 +434,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 </td>
                                 <td>
                                     {editingId === cert.id ? (
-                                        <input
+                                        <Input
                                             type="number"
                                             value={editingData.workYears ?? 0}
                                             onChange={(e) =>
@@ -332,7 +459,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                     }}
                                 >
                                     {editingId === cert.id ? (
-                                        <input
+                                        <Input
                                             type="text"
                                             value={editingData.blessing || ""}
                                             onChange={(e) => setEditingData({ ...editingData, blessing: e.target.value })}
@@ -343,7 +470,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                         cert.blessing
                                     )}
                                 </td>
-                                <td style={{ fontSize: "13px", color: "#64748b" }}>{cert.createdAt}</td>
+                                <td style={{ fontSize: "15px", color: "#64748b" }}>{cert.createdAt}</td>
                                 <td>
                                     <div
                                         style={{
@@ -356,7 +483,8 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                     >
                                         {editingId === cert.id ? (
                                             <>
-                                                <button
+                                                <Button
+                                                    type="button"
                                                     onClick={handleSave}
                                                     disabled={loading}
                                                     className="admin-btn-primary"
@@ -375,8 +503,9 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                                 >
                                                     <Save size={14} style={{ marginRight: "4px" }} />
                                                     保存
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
+                                                    type="button"
                                                     onClick={handleCancel}
                                                     disabled={loading}
                                                     style={{
@@ -398,11 +527,11 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                                 >
                                                     <XCircle size={14} style={{ marginRight: "4px" }} />
                                                     取消
-                                                </button>
+                                                </Button>
                                             </>
                                         ) : (
                                             <>
-                                                <button
+                                                <Button
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.preventDefault()
@@ -455,8 +584,8 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                                 >
                                                     <Edit2 size={14} style={{ marginRight: "4px", pointerEvents: "none" }} />
                                                     修改
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.preventDefault()
@@ -509,7 +638,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                                 >
                                                     <Trash2 size={14} style={{ marginRight: "4px", pointerEvents: "none" }} />
                                                     删除
-                                                </button>
+                                                </Button>
                                             </>
                                         )}
                                     </div>
@@ -518,6 +647,48 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                         ))}
                         </tbody>
                     </table>
+                    {pagination && (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16,zIndex: 2 }}>
+                            <div style={{ color: "#64748b", fontSize: 14 }}>
+                                共 {pagination.total} 条 · 第 {pagination.page + 1} / {totalPages} 页
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 ,zIndex: 2}}>
+                                <Button
+                                    type="button" // ★
+                                    onClick={() => pagination?.onPageChange(Math.max(0, (pagination?.page ?? 0) - 1))}
+                                    disabled={pagination?.page! <= 0}
+                                    className="admin-btn"
+                                    style={{ padding: "6px 10px", zIndex: 2 }}
+                                >
+                                    上一页
+                                </Button>
+
+                                <Button
+                                    type="button" // ★
+                                    onClick={() => pagination?.onPageChange(Math.min(totalPages - 1, (pagination?.page ?? 0) + 1))}
+                                    disabled={(pagination?.page ?? 0) >= totalPages - 1}
+                                    className="admin-btn"
+                                    style={{ padding: "6px 10px", zIndex: 2 }}
+                                >
+                                    下一页
+                                </Button>
+
+
+                                <select
+                                    value={pagination.size}
+                                    onChange={(e) => pagination.onSizeChange(Number(e.target.value))}
+                                    className="admin-input"
+                                    style={{ width: 100 }}
+                                >
+                                    {[10, 20, 50, 100, 200].map((n) => (
+                                        <option key={n} value={n}>
+                                            每页 {n}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {filteredCertificates.length === 0 && (
@@ -564,7 +735,8 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                         </div>
 
                         <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                            <button
+                            <Button
+                                type="button"
                                 onClick={() => {
                                     setShowDeleteModal(false)
                                     setDeletingId(null)
@@ -581,8 +753,9 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 }}
                             >
                                 取消
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
                                 onClick={confirmDelete}
                                 disabled={loading}
                                 style={{
@@ -596,7 +769,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 }}
                             >
                                 {loading ? "删除中..." : "确认删除"}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -633,7 +806,8 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 <Settings size={20} color="#3b82f6" />
                                 <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>选择导出列</h3>
                             </div>
-                            <button
+                            <Button
+                                type="button"
                                 onClick={() => setShowExportModal(false)}
                                 style={{
                                     background: "none",
@@ -644,7 +818,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 }}
                             >
                                 <X size={20} />
-                            </button>
+                            </Button>
                         </div>
 
                         <div style={{ marginBottom: "24px" }}>
@@ -684,7 +858,7 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                         >
                       {column.label}
                     </span>
-                                        <input
+                                        <Input
                                             type="checkbox"
                                             checked={column.selected}
                                             onChange={() => toggleColumn(index)}
@@ -696,7 +870,8 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                         </div>
 
                         <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                            <button
+                            <Button
+                                type="button"
                                 onClick={() => setShowExportModal(false)}
                                 style={{
                                     padding: "8px 16px",
@@ -709,8 +884,9 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 }}
                             >
                                 取消
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
                                 onClick={handleExport}
                                 disabled={exporting || !exportColumns.some((col) => col.selected)}
                                 className="admin-btn-primary"
@@ -721,11 +897,19 @@ export default function CertificateTable({ certificates, onUpdate }: Certificate
                                 }}
                             >
                                 {exporting ? "导出中..." : "确认导出"}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <ResultModal
+                open={resultOpen}
+                type={resultType}
+                title={resultTitle}
+                message={resultMsg}
+                onClose={() => setResultOpen(false)}
+            />
         </>
     )
 }
