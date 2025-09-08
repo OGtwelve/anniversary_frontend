@@ -1,10 +1,10 @@
 "use client"
 
-import {useEffect, useState} from "react"
-import { Search, Download, Settings, X, Check, Edit2, Trash2, Save, XCircle } from "lucide-react"
-import { apiExport, apiUpdateCertificate, apiDeleteCertificate } from "@/lib/api"
+import {useEffect, useState, useMemo, useCallback, useRef} from "react"
+import {Search, Download, Settings, X, Check, Edit2, Trash2, Save, XCircle} from "lucide-react"
+import {apiExport, apiUpdateCertificate, apiDeleteCertificate} from "@/lib/api"
 import {Button} from "@/components/ui/button";
-import { RefreshCw } from "lucide-react"
+import {RefreshCw} from "lucide-react"
 import {Input} from "@/components/ui/input";
 
 interface Certificate {
@@ -90,7 +90,7 @@ function ResultModal({
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                <div style={{display: "flex", alignItems: "center", gap: 12, marginBottom: 8}}>
                     <div
                         style={{
                             width: 28,
@@ -102,18 +102,18 @@ function ResultModal({
                             flex: "0 0 auto",
                         }}
                     >
-                        {isSuccess ? <Check size={16} color="#fff" /> : <X size={16} color="#fff" />}
+                        {isSuccess ? <Check size={16} color="#fff"/> : <X size={16} color="#fff"/>}
                     </div>
-                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+                    <h3 style={{margin: 0, fontSize: 18, fontWeight: 600, color: "#0f172a"}}>{title}</h3>
                 </div>
                 {message && (
-                    <p style={{ margin: "8px 0 16px", color: "#475569", fontSize: 14, lineHeight: 1.6 }}>{message}</p>
+                    <p style={{margin: "8px 0 16px", color: "#475569", fontSize: 14, lineHeight: 1.6}}>{message}</p>
                 )}
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <div style={{display: "flex", justifyContent: "flex-end"}}>
                     <Button
                         onClick={onClose}
                         className="admin-btn-primary"
-                        style={{ padding: "8px 14px" }}
+                        style={{padding: "8px 14px"}}
                     >
                         我知道了
                     </Button>
@@ -138,7 +138,13 @@ interface CertificateTableProps {
     tableLoading?: boolean
 }
 
-export default function CertificateTable({ certificates = [], onUpdate, pagination,tableLoading = false }: CertificateTableProps) {
+
+export default function CertificateTable({
+                                             certificates = [],
+                                             onUpdate,
+                                             pagination,
+                                             tableLoading = false
+                                         }: CertificateTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [showExportModal, setShowExportModal] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -155,6 +161,38 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
     const totalPages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.size)) : 1
 
     const [refreshing, setRefreshing] = useState(false)
+
+    const [exportColumns, setExportColumns] = useState<ExportColumn[]>([
+        {key: "id", label: "证书编号", selected: true},
+        {key: "name", label: "姓名", selected: true},
+        {key: "employeeId", label: "工号", selected: true},
+        {key: "joinDate", label: "入职时间", selected: true},
+        {key: "workYears", label: "工龄(天)", selected: true},
+        {key: "blessing", label: "祝福语", selected: true},
+        {key: "createdAt", label: "首次注册时间", selected: true},
+    ])
+
+    // —— 选中状态派生值
+    const allChecked = useMemo(() => exportColumns.every(c => c.selected), [exportColumns])
+    const noneChecked = useMemo(() => exportColumns.every(c => !c.selected), [exportColumns])
+
+    // —— 三态“全选”勾选框需要的 ref
+    const masterRef = useRef<HTMLInputElement>(null)
+    useEffect(() => {
+        if (masterRef.current) {
+            masterRef.current.indeterminate = !allChecked && !noneChecked
+        }
+    }, [allChecked, noneChecked])
+
+    // —— 工具方法
+    const setAll = useCallback((checked: boolean) => {
+        setExportColumns(cols => cols.map(c => ({...c, selected: checked})))
+    }, [])
+
+    const invertSelection = useCallback(() => {
+        setExportColumns(cols => cols.map(c => ({...c, selected: !c.selected})))
+    }, [])
+
 
     const handleRefresh = async () => {
         if (!onUpdate) return
@@ -178,15 +216,6 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
         window.setTimeout(() => setResultOpen(false), 1500)
     }
 
-    const [exportColumns, setExportColumns] = useState<ExportColumn[]>([
-        { key: "id", label: "证书编号", selected: true },
-        { key: "name", label: "姓名", selected: true },
-        { key: "employeeId", label: "工号", selected: true },
-        { key: "joinDate", label: "入职时间", selected: true },
-        { key: "workYears", label: "工龄(天)", selected: true },
-        { key: "blessing", label: "祝福语", selected: true },
-        { key: "createdAt", label: "首次注册时间", selected: true },
-    ])
     const [exporting, setExporting] = useState(false)
 
     const filteredCertificates = certificates.filter((cert) => {
@@ -290,12 +319,12 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
     }
 
     const toggleColumn = (index: number) => {
-        setExportColumns((prev) => prev.map((col, i) => (i === index ? { ...col, selected: !col.selected } : col)))
+        setExportColumns((prev) => prev.map((col, i) => (i === index ? {...col, selected: !col.selected} : col)))
     }
 
     return (
         <>
-            <div className="admin-card" style={{ padding: "24px" }}>
+            <div className="admin-card" style={{padding: "24px"}}>
                 <div
                     style={{
                         display: "flex",
@@ -326,15 +355,26 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                         </p>
                     </div>
 
-                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <div style={{display: "flex", gap: "12px", alignItems: "center"}}>
                         <Button
                             type="button"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRefresh() }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleRefresh()
+                            }}
                             disabled={refreshing}
                             className="admin-btn-secondary"
-                            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", fontSize: 14, opacity: refreshing ? .6 : 1 }}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "8px 12px",
+                                fontSize: 14,
+                                opacity: refreshing ? .6 : 1
+                            }}
                         >
-                            <RefreshCw size={16} />
+                            <RefreshCw size={16}/>
                             {refreshing ? "刷新中..." : "刷新"}
                         </Button>
                         <Button
@@ -349,11 +389,11 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                 fontSize: "14px",
                             }}
                         >
-                            <Download size={16} />
+                            <Download size={16}/>
                             导出
                         </Button>
 
-                        <div style={{ position: "relative", width: "300px" }}>
+                        <div style={{position: "relative", width: "300px"}}>
                             <Search
                                 size={18}
                                 color="#64748b"
@@ -370,14 +410,14 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="admin-input"
-                                style={{ paddingLeft: "40px" }}
+                                style={{paddingLeft: "40px"}}
                             />
                         </div>
                     </div>
                 </div>
 
-                <div style={{ overflowX: "auto", position: "relative", zIndex: 2 }}>
-                    <table className="admin-table" style={{ position: "relative", zIndex: 2 }}>
+                <div style={{overflowX: "auto", position: "relative", zIndex: 2}}>
+                    <table className="admin-table" style={{position: "relative", zIndex: 2}}>
                         <thead>
                         <tr>
                             <th>证书编号</th>
@@ -393,15 +433,15 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                         <tbody>
                         {filteredCertificates.map((cert) => (
                             <tr key={cert.id}>
-                                <td style={{ fontSize: "15px" }}>{cert.id}</td>
-                                <td style={{ fontWeight: "500" }}>
+                                <td style={{fontSize: "15px"}}>{cert.id}</td>
+                                <td style={{fontWeight: "500"}}>
                                     {editingId === cert.id ? (
                                         <Input
                                             type="text"
                                             value={editingData.name || ""}
-                                            onChange={(e) => setEditingData({ ...editingData, name: e.target.value })}
+                                            onChange={(e) => setEditingData({...editingData, name: e.target.value})}
                                             className="admin-input"
-                                            style={{ width: "100%", minWidth: "80px" }}
+                                            style={{width: "100%", minWidth: "80px"}}
                                         />
                                     ) : (
                                         cert.name
@@ -412,9 +452,12 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                         <Input
                                             type="text"
                                             value={editingData.employeeId || ""}
-                                            onChange={(e) => setEditingData({ ...editingData, employeeId: e.target.value })}
+                                            onChange={(e) => setEditingData({
+                                                ...editingData,
+                                                employeeId: e.target.value
+                                            })}
                                             className="admin-input"
-                                            style={{ width: "100%", minWidth: "80px" }}
+                                            style={{width: "100%", minWidth: "80px"}}
                                         />
                                     ) : (
                                         cert.employeeId
@@ -425,9 +468,9 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                         <Input
                                             type="date"
                                             value={editingData.joinDate || ""}
-                                            onChange={(e) => setEditingData({ ...editingData, joinDate: e.target.value })}
+                                            onChange={(e) => setEditingData({...editingData, joinDate: e.target.value})}
                                             className="admin-input"
-                                            style={{ width: "100%", minWidth: "120px" }}
+                                            style={{width: "100%", minWidth: "120px"}}
                                         />
                                     ) : (
                                         cert.joinDate
@@ -445,7 +488,7 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                                 })
                                             }
                                             className="admin-input"
-                                            style={{ width: "100%", minWidth: "60px" }}
+                                            style={{width: "100%", minWidth: "60px"}}
                                         />
                                     ) : (
                                         cert.workYears
@@ -463,15 +506,15 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                         <Input
                                             type="text"
                                             value={editingData.blessing || ""}
-                                            onChange={(e) => setEditingData({ ...editingData, blessing: e.target.value })}
+                                            onChange={(e) => setEditingData({...editingData, blessing: e.target.value})}
                                             className="admin-input"
-                                            style={{ width: "100%", minWidth: "150px" }}
+                                            style={{width: "100%", minWidth: "150px"}}
                                         />
                                     ) : (
                                         cert.blessing
                                     )}
                                 </td>
-                                <td style={{ fontSize: "15px", color: "#64748b" }}>{cert.createdAt}</td>
+                                <td style={{fontSize: "15px", color: "#64748b"}}>{cert.createdAt}</td>
                                 <td>
                                     <div
                                         style={{
@@ -502,7 +545,7 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                                         zIndex: 1,
                                                     }}
                                                 >
-                                                    <Save size={14} style={{ marginRight: "4px" }} />
+                                                    <Save size={14} style={{marginRight: "4px"}}/>
                                                     保存
                                                 </Button>
                                                 <Button
@@ -526,7 +569,7 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                                         zIndex: 1,
                                                     }}
                                                 >
-                                                    <XCircle size={14} style={{ marginRight: "4px" }} />
+                                                    <XCircle size={14} style={{marginRight: "4px"}}/>
                                                     取消
                                                 </Button>
                                             </>
@@ -583,7 +626,8 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                                         }
                                                     }}
                                                 >
-                                                    <Edit2 size={14} style={{ marginRight: "4px", pointerEvents: "none" }} />
+                                                    <Edit2 size={14}
+                                                           style={{marginRight: "4px", pointerEvents: "none"}}/>
                                                     修改
                                                 </Button>
                                                 <Button
@@ -637,7 +681,8 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                                         }
                                                     }}
                                                 >
-                                                    <Trash2 size={14} style={{ marginRight: "4px", pointerEvents: "none" }} />
+                                                    <Trash2 size={14}
+                                                            style={{marginRight: "4px", pointerEvents: "none"}}/>
                                                     删除
                                                 </Button>
                                             </>
@@ -649,17 +694,23 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                         </tbody>
                     </table>
                     {pagination && (
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16,zIndex: 2 }}>
-                            <div style={{ color: "#64748b", fontSize: 14 }}>
+                        <div style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginTop: 16,
+                            zIndex: 2
+                        }}>
+                            <div style={{color: "#64748b", fontSize: 14}}>
                                 共 {pagination.total} 条 · 第 {pagination.page + 1} / {totalPages} 页
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 ,zIndex: 2}}>
+                            <div style={{display: "flex", alignItems: "center", gap: 8, zIndex: 2}}>
                                 <Button
                                     type="button" // ★
                                     onClick={() => pagination?.onPageChange(Math.max(0, (pagination?.page ?? 0) - 1))}
                                     disabled={pagination?.page! <= 0}
                                     className="admin-btn"
-                                    style={{ padding: "6px 10px", zIndex: 2 }}
+                                    style={{padding: "6px 10px", zIndex: 2}}
                                 >
                                     上一页
                                 </Button>
@@ -669,7 +720,7 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                     onClick={() => pagination?.onPageChange(Math.min(totalPages - 1, (pagination?.page ?? 0) + 1))}
                                     disabled={(pagination?.page ?? 0) >= totalPages - 1}
                                     className="admin-btn"
-                                    style={{ padding: "6px 10px", zIndex: 2 }}
+                                    style={{padding: "6px 10px", zIndex: 2}}
                                 >
                                     下一页
                                 </Button>
@@ -679,7 +730,7 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                     value={pagination.size}
                                     onChange={(e) => pagination.onSizeChange(Number(e.target.value))}
                                     className="admin-input"
-                                    style={{ width: 100 }}
+                                    style={{width: 100}}
                                 >
                                     {[10, 20, 50, 100, 200].map((n) => (
                                         <option key={n} value={n}>
@@ -740,14 +791,19 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                             margin: "20px",
                         }}
                     >
-                        <div style={{ marginBottom: "20px" }}>
-                            <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: "600", color: "#ef4444" }}>确认删除</h3>
-                            <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
+                        <div style={{marginBottom: "20px"}}>
+                            <h3 style={{
+                                margin: "0 0 8px 0",
+                                fontSize: "18px",
+                                fontWeight: "600",
+                                color: "#ef4444"
+                            }}>确认删除</h3>
+                            <p style={{color: "#64748b", fontSize: "14px", margin: 0}}>
                                 确定要删除这条证书记录吗？此操作不可撤销。
                             </p>
                         </div>
 
-                        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                        <div style={{display: "flex", gap: "12px", justifyContent: "flex-end"}}>
                             <Button
                                 type="button"
                                 onClick={() => {
@@ -813,12 +869,51 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                         }}
                     >
                         <div
-                            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: "20px"
+                            }}
                         >
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <Settings size={20} color="#3b82f6" />
-                                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>选择导出列</h3>
+                            <div style={{
+                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                padding: "8px 0", marginBottom: 8, borderBottom: "1px dashed #e2e8f0"
+                            }}>
+                                <label style={{display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
+                                    <input
+                                        ref={masterRef}
+                                        type="checkbox"
+                                        checked={allChecked}
+                                        onChange={(e) => setAll(e.target.checked)}
+                                        style={{width: 16, height: 16}}
+                                    />
+                                    <span style={{fontSize: 14, color: "#1e293b"}}>全选</span>
+                                </label>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setAll(false)}
+                                    className="admin-btn"
+                                    style={{padding: "4px 10px", fontSize: 12}}
+                                >
+                                    全不选
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={invertSelection}
+                                    className="admin-btn"
+                                    style={{padding: "4px 10px", fontSize: 12}}
+                                >
+                                    反选
+                                </button>
+
+                                <span style={{marginLeft: "auto", fontSize: 12, color: "#64748b"}}>
+    已选 {exportColumns.filter(c => c.selected).length} / {exportColumns.length}
+  </span>
                             </div>
+
                             <Button
                                 type="button"
                                 onClick={() => setShowExportModal(false)}
@@ -830,13 +925,17 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                     color: "#64748b",
                                 }}
                             >
-                                <X size={20} />
+                                <X size={20}/>
                             </Button>
                         </div>
 
-                        <div style={{ marginBottom: "24px" }}>
-                            <p style={{ color: "#64748b", fontSize: "14px", margin: "0 0 16px 0" }}>选择要导出的数据列：</p>
-                            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{marginBottom: "24px"}}>
+                            <p style={{
+                                color: "#64748b",
+                                fontSize: "14px",
+                                margin: "0 0 16px 0"
+                            }}>选择要导出的数据列：</p>
+                            <div style={{maxHeight: "300px", overflowY: "auto"}}>
                                 {exportColumns.map((column, index) => (
                                     <label
                                         key={column.key}
@@ -861,7 +960,7 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                                 borderColor: column.selected ? "#3b82f6" : "#e2e8f0",
                                             }}
                                         >
-                                            {column.selected && <Check size={12} color="white" />}
+                                            {column.selected && <Check size={12} color="white"/>}
                                         </div>
                                         <span
                                             style={{
@@ -875,14 +974,14 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                                             type="checkbox"
                                             checked={column.selected}
                                             onChange={() => toggleColumn(index)}
-                                            style={{ display: "none" }}
+                                            style={{display: "none"}}
                                         />
                                     </label>
                                 ))}
                             </div>
                         </div>
 
-                        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                        <div style={{display: "flex", gap: "12px", justifyContent: "flex-end"}}>
                             <Button
                                 type="button"
                                 onClick={() => setShowExportModal(false)}
