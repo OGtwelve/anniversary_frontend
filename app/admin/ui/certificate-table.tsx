@@ -193,6 +193,59 @@ export default function CertificateTable({
         setExportColumns(cols => cols.map(c => ({...c, selected: !c.selected})))
     }, [])
 
+    // —— 选中行（跨页保留），也可换成数组
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+    const filteredCertificates = useMemo(() => {
+        const q = searchTerm.trim()
+        if (!q) return certificates
+        return certificates.filter(c =>
+            c.name.includes(q) || c.employeeId.includes(q) || c.id.includes(q)
+        )
+    }, [certificates, searchTerm])
+
+    // 当前表格展示的行 id（受搜索过滤）
+    const pageIds = useMemo(() => filteredCertificates.map(c => c.id), [filteredCertificates])
+
+    // 页面级的“全选/半选/全不选”
+    const pageMasterRef = useRef<HTMLInputElement>(null)
+    const pageAllChecked = pageIds.length > 0 && pageIds.every(id => selectedIds.has(id))
+    const pageNoneChecked = pageIds.every(id => !selectedIds.has(id))
+
+    useEffect(() => {
+        if (pageMasterRef.current) {
+            pageMasterRef.current.indeterminate = !pageAllChecked && !pageNoneChecked
+        }
+    }, [pageAllChecked, pageNoneChecked])
+
+    // 勾选/取消某一行
+    const toggleRow = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev)
+            if (next.has(id)) next.delete(id)
+            else next.add(id)
+            return next
+        })
+    }, [])
+
+    // 当前页全选/全不选
+    const togglePageAll = useCallback((checked: boolean) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev)
+            if (checked) {
+                pageIds.forEach(id => next.add(id))
+            } else {
+                pageIds.forEach(id => next.delete(id))
+            }
+            return next
+        })
+    }, [pageIds])
+
+    // 清空所有选择（可选）
+    const clearSelection = useCallback(() => setSelectedIds(new Set()), [])
+
+    // 'selected' = 导出所选，'all' = 全部导出
+    const [exportScope, setExportScope] = useState<'selected' | 'all'>('selected')
 
     const handleRefresh = async () => {
         if (!onUpdate) return
@@ -217,12 +270,6 @@ export default function CertificateTable({
     }
 
     const [exporting, setExporting] = useState(false)
-
-    const filteredCertificates = certificates.filter((cert) => {
-        const q = searchTerm.trim()
-        if (!q) return true
-        return cert.name.includes(q) || cert.employeeId.includes(q) || cert.id.includes(q)
-    })
 
     const handleEdit = (cert: Certificate) => {
         console.log("[v0] Edit button clicked for certificate:", cert.id)
@@ -285,7 +332,7 @@ export default function CertificateTable({
     }
 
     const handleExport = async () => {
-        const selected = exportColumns.filter((c) => c.selected)
+        const selected = exportColumns.filter(c => c.selected)
         if (selected.length === 0) {
             openResult("error", "导出失败", "请至少选择一列再导出")
             return
@@ -293,12 +340,18 @@ export default function CertificateTable({
 
         setExporting(true)
         try {
-            const columns = selected.map((c) => COL_KEY_MAP[c.key])
-            const payload = {
+            const columns = selected.map(c => COL_KEY_MAP[c.key])
+
+            const ids = exportScope === 'selected' && selectedIds.size > 0
+                ? Array.from(selectedIds)
+                : undefined
+
+            const payload: any = {
                 columns,
-                q: searchTerm.trim() || undefined,
                 limit: 5000,
                 format: "csv",
+                // 全部导出时，不带 q、不带 ids
+                ...(exportScope === 'selected' ? {q: (searchTerm.trim() || undefined), ids} : {})
             }
 
             await apiExport(
@@ -308,8 +361,13 @@ export default function CertificateTable({
             )
 
             setShowExportModal(false)
-            // 导出一般不需要刷新，但如果后端会记录导出日志要展示，可调用 onUpdate?.()
-            openResult("success", "导出开始", "文件已开始下载")
+            openResult(
+                "success",
+                "导出开始",
+                exportScope === 'all'
+                    ? "已开始导出全部数据"
+                    : (ids ? `已导出所选 ${ids.length} 条` : "已按搜索条件导出")
+            )
         } catch (err) {
             console.error("导出失败:", err)
             openResult("error", "导出失败", "请稍后重试")
@@ -356,6 +414,19 @@ export default function CertificateTable({
                     </div>
 
                     <div style={{display: "flex", gap: "12px", alignItems: "center"}}>
+                        {/* 全部导出 */}
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                setExportScope('all');
+                                setShowExportModal(true)
+                            }}
+                            className="admin-btn"                     // 次要样式
+                            style={{display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", fontSize: 14}}
+                        >
+                            <Download size={16}/>
+                            全部导出
+                        </Button>
                         <Button
                             type="button"
                             onClick={(e) => {
@@ -379,7 +450,10 @@ export default function CertificateTable({
                         </Button>
                         <Button
                             type="button"
-                            onClick={() => setShowExportModal(true)}
+                            onClick={() => {
+                                setShowExportModal(true);
+                                setExportScope('selected');
+                            }}
                             className="admin-btn-primary"
                             style={{
                                 display: "flex",
@@ -420,6 +494,14 @@ export default function CertificateTable({
                     <table className="admin-table" style={{position: "relative", zIndex: 2}}>
                         <thead>
                         <tr>
+                            <th style={{width: 40}}>
+                                <Input
+                                    ref={pageMasterRef}
+                                    type="checkbox"
+                                    checked={pageAllChecked}
+                                    onChange={(e) => togglePageAll(e.target.checked)}
+                                />
+                            </th>
                             <th>证书编号</th>
                             <th>姓名</th>
                             <th>工号</th>
@@ -433,6 +515,14 @@ export default function CertificateTable({
                         <tbody>
                         {filteredCertificates.map((cert) => (
                             <tr key={cert.id}>
+                                {/* 选择框列 */}
+                                <td style={{width: 40}}>
+                                    <Input
+                                        type="checkbox"
+                                        checked={selectedIds.has(cert.id)}
+                                        onChange={() => toggleRow(cert.id)}
+                                    />
+                                </td>
                                 <td style={{fontSize: "15px"}}>{cert.id}</td>
                                 <td style={{fontWeight: "500"}}>
                                     {editingId === cert.id ? (
@@ -912,6 +1002,12 @@ export default function CertificateTable({
                                 <span style={{marginLeft: "auto", fontSize: 12, color: "#64748b"}}>
     已选 {exportColumns.filter(c => c.selected).length} / {exportColumns.length}
   </span>
+
+                                <span style={{marginLeft: 12, fontSize: 12, color: "#3b82f6", whiteSpace: "nowrap"}}>
+      {exportScope === 'all'
+          ? '范围：全部数据'
+          : `范围：所选${selectedIds.size ? `（${selectedIds.size} 条）` : ' / 当前搜索结果'}`}
+    </span>
                             </div>
 
                             <Button
