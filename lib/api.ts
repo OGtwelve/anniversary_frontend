@@ -23,3 +23,85 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
         clearTimeout(id);
     }
 }
+
+export async function apiExport(
+    path: string,
+    body?: any,                       // 传则用 POST，不传则 GET
+    fallbackFilename?: string,        // 后端没回文件名时的兜底
+    init: RequestInit = {}
+) {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 60_000); // 导出给 60s
+    try {
+        const url = apiUrl(path);
+
+        // 统一 headers（始终带上 token）
+        const headers: HeadersInit = {
+            ...(init.headers || {}),
+            Authorization: `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        };
+
+        // 选择 method
+        const method = init.method || (body !== undefined ? "POST" : "GET");
+
+        const fetchInit: RequestInit = {
+            ...init,
+            method,
+            headers,
+            signal: controller.signal,
+        };
+
+        // 有 body 才加 JSON
+        if (body !== undefined) {
+            (headers as any)["Content-Type"] = "application/json";
+            fetchInit.body = typeof body === "string" ? body : JSON.stringify(body);
+        }
+
+        const res = await fetch(url, fetchInit);
+        if (!res.ok) {
+            // 统一错误信息
+            let msg = `HTTP ${res.status}`;
+            try {
+                const j = await res.json();
+                if (j?.message) msg = j.message;
+            } catch {
+                const txt = await res.text().catch(() => "");
+                if (txt) msg += ` - ${txt}`;
+            }
+            throw new Error(msg);
+        }
+
+        const blob = await res.blob();
+
+        // 从响应头拿文件名（优先）
+        let filename = fallbackFilename;
+        const cd = res.headers.get("content-disposition");
+        if (cd) {
+            const m = /filename\*?=(?:UTF-8'')?("?)([^\";]+)\1/i.exec(cd);
+            if (m?.[2]) filename = decodeURIComponent(m[2]);
+        }
+        if (!filename) {
+            const ext =
+                blob.type.includes("spreadsheetml") || blob.type.includes("excel")
+                    ? ".xlsx"
+                    : blob.type.includes("csv")
+                        ? ".csv"
+                        : blob.type.includes("pdf")
+                            ? ".pdf"
+                            : "";
+            filename = `download_${new Date().toISOString().slice(0, 10)}${ext}`;
+        }
+
+        // 触发下载
+        const objUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(objUrl), 0);
+    } finally {
+        clearTimeout(t);
+    }
+}
