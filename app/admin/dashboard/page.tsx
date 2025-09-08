@@ -49,13 +49,16 @@ export default function AdminDashboard() {
         validBlessings: 0,
     })
     const [certificates, setCertificates] = useState<Certificate[]>([])
-    const [loading, setLoading] = useState(true)
     const [userInfo, setUserInfo] = useState<{ username: string; name: string } | null>(null)
     const router = useRouter()
     // state
     const [page, setPage] = useState(0)
     const [size, setSize] = useState(20)
     const [total, setTotal] = useState(0)
+
+    const [booting, setBooting] = useState(true)
+    const [tableLoading, setTableLoading] = useState(false)
+
 
     useEffect(() => {
         const token = localStorage.getItem("admin_token")
@@ -84,13 +87,23 @@ export default function AdminDashboard() {
             setUserInfo(JSON.parse(user))
         }
 
-        loadDashboardData(page,size)
-    }, [router,page,size])
+        // 首屏加载：只动 booting，不动 tableLoading
+        loadDashboardData(page, size, { isBoot: true })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [router])
+
+    useEffect(() => {
+        if (!booting) {
+            loadDashboardData(page, size) // 非首屏，不传 isBoot
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, size])
 
     // loadDashboardData 改为带 page/size
-    async function loadDashboardData(p = page, s = size) {
+    async function loadDashboardData(p = page, s = size, opts?: { isBoot?: boolean }) {
+        const setL = opts?.isBoot ? setBooting : setTableLoading
+        setL(true)
         try {
-            setLoading(true) // 建议：翻页时也给个轻量 loading
             const [statsResponse, certificatesResponse] = await Promise.all([
                 apiFetch("/admin/stats", {
                     headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` },
@@ -101,40 +114,27 @@ export default function AdminDashboard() {
             ])
 
             const statsData = await statsResponse.json()
-            const certPage = await certificatesResponse.json() // { items,total,page,size } 或数组兜底
+            const certPage = await certificatesResponse.json()
 
             setStats(statsData)
             const items = Array.isArray(certPage) ? certPage : (certPage?.items ?? [])
             setCertificates(items)
             setTotal(Array.isArray(certPage) ? items.length : (certPage?.total ?? 0))
 
-            // 如果当前页被删空了，自动回退一页再拉一次
             if (p > 0 && items.length === 0 && (certPage?.total ?? 0) > 0) {
-                setPage(p - 1) // 下面的 useEffect 会自动再次触发
+                setPage(p - 1) // 回退一页，由上面的 useEffect 触发再拉
             }
         } catch (e) {
             console.error("加载数据失败:", e)
-            setStats({
-                totalCertificates: 3,
-                todaySubmissions: 0,
-                averageWorkYears: 2.7,
-                validBlessings: 2,
-            })
-
-            setCertificates([
-                {
-                    id: "SCS01-0886-0001",
-                    name: "胡淏楠",
-                    employeeId: "002857",
-                    joinDate: "2023/4/4",
-                    workYears: 645,
-                    blessing: "祝愿之江实验室蒸蒸日上！",
-                    createdAt: "2025/1/7 22:30:00",
-                    status: "generated",
-                },
-            ])
+            // 兜底
+            setStats({ totalCertificates: 3, todaySubmissions: 0, averageWorkYears: 2.7, validBlessings: 2 })
+            setCertificates([{
+                id: "SCS01-0886-0001", name: "胡淏楠", employeeId: "002857",
+                joinDate: "2023/4/4", workYears: 645, blessing: "祝愿之江实验室蒸蒸日上！",
+                createdAt: "2025/1/7 22:30:00", status: "generated",
+            }])
         } finally {
-            setLoading(false)
+            setL(false)
         }
     }
 
@@ -182,14 +182,13 @@ export default function AdminDashboard() {
                         <div style={{marginTop: "32px"}}>
                             <CertificateTable
                                 certificates={certificates}
-                                onUpdate={loadDashboardData}
+                                onUpdate={() => loadDashboardData(page, size)} // 只动表格 loading
                                 pagination={{
-                                    page,
-                                    size,
-                                    total,
+                                    page, size, total,
                                     onPageChange: setPage,
                                     onSizeChange: (s: number) => { setPage(0); setSize(s) },
                                 }}
+                                tableLoading={tableLoading} // ⬅ 传下去做局部遮罩
                             />
                         </div>
                     </>
@@ -201,16 +200,10 @@ export default function AdminDashboard() {
         }
     }
 
-    if (loading) {
+    // 5) 首屏时才整页 loading
+    if (booting) {
         return (
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minHeight: "100vh",
-                }}
-            >
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh"}}>
                 <div>加载中...</div>
             </div>
         )

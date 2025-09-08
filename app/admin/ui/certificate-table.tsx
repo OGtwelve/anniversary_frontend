@@ -135,9 +135,10 @@ interface CertificateTableProps {
     certificates?: Certificate[]   // ← 可选
     onUpdate?: () => void
     pagination?: PaginationProps
+    tableLoading?: boolean
 }
 
-export default function CertificateTable({ certificates = [], onUpdate, pagination }: CertificateTableProps) {
+export default function CertificateTable({ certificates = [], onUpdate, pagination,tableLoading = false }: CertificateTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [showExportModal, setShowExportModal] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -702,6 +703,18 @@ export default function CertificateTable({ certificates = [], onUpdate, paginati
                         {searchTerm ? "没有找到匹配的证书" : "暂无证书数据"}
                     </div>
                 )}
+
+                {/*{tableLoading && (*/}
+                {/*    <div*/}
+                {/*        style={{*/}
+                {/*            position: "absolute", inset: 0, background: "rgba(255,255,255,.6)",*/}
+                {/*            display: "flex", alignItems: "center", justifyContent: "center",*/}
+                {/*            zIndex: 20, backdropFilter: "blur(2px)"*/}
+                {/*        }}*/}
+                {/*    >*/}
+                {/*        <span style={{ color: "#64748b" }}>加载中...</span>*/}
+                {/*    </div>*/}
+                {/*)}*/}
             </div>
 
             {showDeleteModal && (
